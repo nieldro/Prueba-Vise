@@ -1,5 +1,6 @@
 import { request } from './client';
 import type {
+  CalendarResult,
   Category,
   DashboardSummary,
   Kardex,
@@ -26,6 +27,7 @@ export interface ProductFilters {
 export const productsApi = {
   list: (filters: ProductFilters) =>
     request<Paginated<Product>>('/products', { query: { ...filters } }),
+  get: (id: number) => request<Product>(`/products/${id}`),
   lowStock: (query: { page: number; limit: number; threshold: number }) =>
     request<Paginated<Product>>('/products/low-stock', { query }),
   create: (input: ProductInput) => request<Product>('/products', { method: 'POST', body: input }),
@@ -48,4 +50,5 @@ export const movementsApi = {
 
 export const dashboardApi = {
   summary: (days: number) => request<DashboardSummary>('/dashboard/summary', { query: { days } }),
+  calendar: (month: string) => request<CalendarResult>('/dashboard/calendar', { query: { month } }),
 };

@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 // Cada pagina se descarga bajo demanda; el tablero arrastra la libreria de graficas.
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const ProductsPage = lazy(() => import('./pages/ProductsPage').then((m) => ({ default: m.ProductsPage })));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage })));
 const KardexPage = lazy(() => import('./pages/KardexPage').then((m) => ({ default: m.KardexPage })));
 const MovementsPage = lazy(() => import('./pages/MovementsPage').then((m) => ({ default: m.MovementsPage })));
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
@@ -27,6 +28,7 @@ export function App() {
         >
           <Route index element={<DashboardPage />} />
           <Route path="productos" element={<ProductsPage />} />
+          <Route path="productos/:id" element={<ProductDetailPage />} />
           <Route path="productos/:id/kardex" element={<KardexPage />} />
           <Route path="movimientos" element={<MovementsPage />} />
           <Route path="categorias" element={<CategoriesPage />} />

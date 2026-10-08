@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480" role="img">
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f9"/><stop offset=".5" stop-color="#aab6cb"/><stop offset="1" stop-color="#6f7d97"/></linearGradient>
+<linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3ddee"/></linearGradient>
+<linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d5972"/><stop offset="1" stop-color="#1c2438"/></linearGradient>
+<linearGradient id="black" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d3347"/><stop offset="1" stop-color="#0c101b"/></linearGradient>
+<linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f5079"/><stop offset="1" stop-color="#1a2342"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b3202a"/><stop offset=".4" stop-color="#ff6b6b"/><stop offset="1" stop-color="#a91d27"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c58a45"/><stop offset="1" stop-color="#6e411a"/></linearGradient>
+<linearGradient id="amber" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+<linearGradient id="gun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b778c"/><stop offset=".5" stop-color="#3a4457"/><stop offset="1" stop-color="#171d2b"/></linearGradient>
+<radialGradient id="glass" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#5b8fe8"/><stop offset=".45" stop-color="#1e3a7a"/><stop offset="1" stop-color="#070d22"/></radialGradient>
+<radialGradient id="lens" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#7fb2ff"/><stop offset=".35" stop-color="#27468c"/><stop offset="1" stop-color="#050a1c"/></radialGradient>
+<filter id="sh" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="13" flood-color="#0f2560" flood-opacity=".32"/></filter>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#203a78"/><stop offset="1" stop-color="#0e1b3d"/></linearGradient></defs>
+<rect width="640" height="480" fill="url(#bg)"/>
+<circle cx="320" cy="236" r="210" fill="#3b82f6" opacity="0.16"/>
+<circle cx="320" cy="236" r="150" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+<ellipse cx="320" cy="420" rx="220" ry="26" fill="#0a1430" opacity=".85"/>
+<g filter="url(#sh)" >
+      <rect x="228" y="156" width="184" height="196" rx="30" fill="url(#white)" stroke="#b7c4dc" stroke-width="2"/>
+      <ellipse cx="320" cy="238" rx="62" ry="70" fill="#eef3fb" stroke="#aab9d6" stroke-width="3"/>
+      <path d="M280 176 q-6 62 0 124" stroke="#9fb0cd" stroke-width="2.5" fill="none"/><path d="M296 176 q-6 62 0 124" stroke="#9fb0cd" stroke-width="2.5" fill="none"/><path d="M312 176 q-6 62 0 124" stroke="#9fb0cd" stroke-width="2.5" fill="none"/><path d="M328 176 q6 62 0 124" stroke="#9fb0cd" stroke-width="2.5" fill="none"/><path d="M344 176 q6 62 0 124" stroke="#9fb0cd" stroke-width="2.5" fill="none"/><path d="M360 176 q6 62 0 124" stroke="#9fb0cd" stroke-width="2.5" fill="none"/>
+      <ellipse cx="296" cy="205" rx="18" ry="30" fill="#fff" opacity="0.7"/>
+      <circle cx="320" cy="326" r="8" fill="#ef4444" /><ellipse cx="318" cy="323" rx="3" ry="3" fill="#fff" opacity="0.9"/>
+      <rect x="296" y="350" width="48" height="20" rx="8" fill="url(#metal)"/></g>
+</svg>

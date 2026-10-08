@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from '../api/endpoints';
-import type { Product } from '../api/types';
+import type { Product, ProductInput } from '../api/types';
 import { Modal } from '../components/Modal';
 import { useToast } from '../components/Toast';
 import { useCategories } from './useCategories';
@@ -26,10 +26,13 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
   const [categoryId, setCategoryId] = useState<number | ''>(product?.categoryId ?? '');
   const [price, setPrice] = useState(product ? String(Number(product.price)) : '');
   const [initialStock, setInitialStock] = useState('');
+  const [brand, setBrand] = useState(product?.brand ?? '');
+  const [unit, setUnit] = useState(product?.unit ?? 'Und');
+  const [description, setDescription] = useState(product?.description ?? '');
   const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (input: { name: string; sku: string; categoryId: number; price: number; initialStock?: number }) =>
+    mutationFn: (input: ProductInput) =>
       product ? productsApi.update(product.id, input) : productsApi.create(input),
     onSuccess: () => {
       void queryClient.invalidateQueries();
@@ -63,6 +66,9 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
       sku: cleanSku,
       categoryId,
       price: priceNumber,
+      unit: unit.trim() || 'Und',
+      ...(brand.trim() && { brand: brand.trim() }),
+      ...(description.trim() && { description: description.trim() }),
       ...(!isEdit && stockNumber !== undefined && { initialStock: stockNumber }),
     });
   };
@@ -125,6 +131,22 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
             </label>
           )}
         </div>
+
+        <div className="form__row">
+          <label className="field">
+            <span>Marca</span>
+            <input value={brand} maxLength={80} onChange={(e) => setBrand(e.target.value)} />
+          </label>
+          <label className="field">
+            <span>Unidad</span>
+            <input value={unit} maxLength={20} onChange={(e) => setUnit(e.target.value)} placeholder="Und, Caja, Par" />
+          </label>
+        </div>
+
+        <label className="field">
+          <span>Descripción</span>
+          <textarea value={description} maxLength={1000} rows={3} onChange={(e) => setDescription(e.target.value)} />
+        </label>
 
         {isEdit && <p className="hint">El stock solo cambia registrando movimientos.</p>}
         {formError && (

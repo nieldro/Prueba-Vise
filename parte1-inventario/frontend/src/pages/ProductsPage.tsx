@@ -6,6 +6,7 @@ import { productsApi } from '../api/endpoints';
 import type { Product } from '../api/types';
 import { EmptyState, ErrorState, Loading, StockBadge } from '../components/feedback';
 import { Modal } from '../components/Modal';
+import { ProductImage } from '../components/ProductImage';
 import { PageHeader } from '../components/PageHeader';
 import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
@@ -132,8 +133,16 @@ export function ProductsPage() {
                     {list.data.data.map((p) => (
                       <tr key={p.id}>
                         <td>
-                          <strong>{p.name}</strong>
-                          <small className="cell-sub">{p.sku}</small>
+                          <Link className="product-cell" to={`/productos/${p.id}`}>
+                            <ProductImage className="product-cell__img" src={p.images[0]} alt="" />
+                            <span>
+                              <strong>{p.name}</strong>
+                              <small className="cell-sub">
+                                {p.sku}
+                                {p.brand ? ` · ${p.brand}` : ''}
+                              </small>
+                            </span>
+                          </Link>
                         </td>
                         <td>{p.category.name}</td>
                         <td className="num">{formatMoney(p.price)}</td>

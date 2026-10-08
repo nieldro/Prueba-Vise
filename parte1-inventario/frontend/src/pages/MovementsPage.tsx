@@ -38,7 +38,7 @@ export function MovementsPage() {
                     {m.type === 'ENTRADA' ? <ArrowDownToLine size={16} /> : <ArrowUpFromLine size={16} />}
                   </span>
                   <div className="feed__text">
-                    <Link to={`/productos/${m.product.id}/kardex`}>{m.product.name}</Link>
+                    <Link to={`/productos/${m.product.id}`}>{m.product.name}</Link>
                     <small>{formatDateTime(m.createdAt)}</small>
                   </div>
                   <strong className={m.type === 'ENTRADA' ? 'num-in' : 'num-out'}>

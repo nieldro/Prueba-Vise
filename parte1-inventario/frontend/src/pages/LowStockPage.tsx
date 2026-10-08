@@ -5,6 +5,7 @@ import { BookOpen } from 'lucide-react';
 import { productsApi } from '../api/endpoints';
 import { EmptyState, ErrorState, Loading, StockBadge } from '../components/feedback';
 import { PageHeader } from '../components/PageHeader';
+import { ProductImage } from '../components/ProductImage';
 import { Pagination } from '../components/Pagination';
 import { formatInt } from '../lib/format';
 import { useDebounced } from '../lib/useDebounced';
@@ -68,8 +69,13 @@ export function LowStockPage() {
                     {list.data.data.map((p) => (
                       <tr key={p.id}>
                         <td>
-                          <strong>{p.name}</strong>
-                          <small className="cell-sub">{p.sku}</small>
+                          <Link className="product-cell" to={`/productos/${p.id}`}>
+                            <ProductImage className="product-cell__img" src={p.images[0]} alt="" />
+                            <span>
+                              <strong>{p.name}</strong>
+                              <small className="cell-sub">{p.sku}</small>
+                            </span>
+                          </Link>
                         </td>
                         <td>{p.category.name}</td>
                         <td className="num">

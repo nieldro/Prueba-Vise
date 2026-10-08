@@ -41,6 +41,14 @@ model Product {
   sku        String     @unique
   categoryId Int        @map("category_id")
   price      Decimal    @db.Decimal(12, 2)
+  brand      String?
+  description String?
+  /// Unidad de medida del inventario (Und, Caja, Par...).
+  unit       String     @default("Und")
+  /// Rutas de las imagenes del producto (la primera es la principal).
+  images     String[]   @default([])
+  /// Especificaciones tecnicas como lista de { label, value }.
+  specs      Json?
   /// Solo se modifica a traves de movimientos (ver MovementsService).
   stock      Int        @default(0)
   createdAt  DateTime   @default(now()) @map("created_at")

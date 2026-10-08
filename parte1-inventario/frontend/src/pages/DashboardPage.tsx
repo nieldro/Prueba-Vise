@@ -14,7 +14,9 @@ import {
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { dashboardApi, productsApi } from '../api/endpoints';
 import { useAuth } from '../auth/AuthContext';
+import { Calendar } from '../components/Calendar';
 import { ErrorState, Loading } from '../components/feedback';
+import { ProductImage } from '../components/ProductImage';
 import { PageHeader } from '../components/PageHeader';
 import { TiltCard } from '../components/TiltCard';
 import { formatDateTime, formatDay, formatInt, percentChange } from '../lib/format';
@@ -123,6 +125,7 @@ export function DashboardPage() {
       </section>
 
       <div className="grid-2">
+        <div className="stack">
         <section className="card card--lift">
           <header className="card__header">
             <h2>Entradas y salidas</h2>
@@ -167,6 +170,34 @@ export function DashboardPage() {
           </div>
         </section>
 
+        <section className="card card--lift">
+          <header className="card__header">
+            <h2>Requieren reposición</h2>
+          </header>
+          {lowStock.data && lowStock.data.data.length > 0 ? (
+            <ul className="feed">
+              {lowStock.data.data.map((p) => (
+                <li key={p.id}>
+                  <ProductImage className="feed__thumb" src={p.images[0]} alt="" />
+                  <div className="feed__text">
+                    <Link to={`/productos/${p.id}`}>{p.name}</Link>
+                    <small>{p.sku}</small>
+                  </div>
+                  <span className={`badge ${p.stock === 0 ? 'badge--danger' : 'badge--warn'}`}>
+                    {formatInt(p.stock)} uds
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">Todo el inventario está sobre el umbral.</p>
+          )}
+          <Link className="card__link" to="/stock-bajo">
+            Ver todos <ArrowRight size={16} />
+          </Link>
+        </section>
+        </div>
+
         <div className="stack">
           <section className="card card--lift">
             <header className="card__header">
@@ -182,7 +213,7 @@ export function DashboardPage() {
                       {m.type === 'ENTRADA' ? <ArrowDownToLine size={16} /> : <ArrowUpFromLine size={16} />}
                     </span>
                     <div className="feed__text">
-                      <Link to={`/productos/${m.product.id}/kardex`}>{m.product.name}</Link>
+                      <Link to={`/productos/${m.product.id}`}>{m.product.name}</Link>
                       <small>{formatDateTime(m.createdAt)}</small>
                     </div>
                     <strong className={m.type === 'ENTRADA' ? 'num-in' : 'num-out'}>
@@ -200,28 +231,9 @@ export function DashboardPage() {
 
           <section className="card card--lift">
             <header className="card__header">
-              <h2>Requieren reposición</h2>
+              <h2>Calendario</h2>
             </header>
-            {lowStock.data && lowStock.data.data.length > 0 ? (
-              <ul className="feed">
-                {lowStock.data.data.map((p) => (
-                  <li key={p.id}>
-                    <div className="feed__text">
-                      <Link to={`/productos/${p.id}/kardex`}>{p.name}</Link>
-                      <small>{p.sku}</small>
-                    </div>
-                    <span className={`badge ${p.stock === 0 ? 'badge--danger' : 'badge--warn'}`}>
-                      {formatInt(p.stock)} uds
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted">Todo el inventario esta sobre el umbral.</p>
-            )}
-            <Link className="card__link" to="/stock-bajo">
-              Ver todos <ArrowRight size={16} />
-            </Link>
+            <Calendar />
           </section>
         </div>
       </div>

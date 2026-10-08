@@ -32,6 +32,12 @@ export interface Product {
   /** Prisma serializa Decimal como texto. */
   price: string;
   stock: number;
+  brand: string | null;
+  description: string | null;
+  unit: string;
+  /** Rutas de imagen; la primera es la principal. */
+  images: string[];
+  specs: Array<{ label: string; value: string }> | null;
   category: { id: number; name: string };
 }
 
@@ -40,7 +46,22 @@ export interface ProductInput {
   sku: string;
   categoryId: number;
   price: number;
+  brand?: string;
+  description?: string;
+  unit?: string;
   initialStock?: number;
+}
+
+export interface CalendarDay {
+  day: string;
+  movements: number;
+  entries: number;
+  exits: number;
+}
+
+export interface CalendarResult {
+  month: string;
+  days: CalendarDay[];
 }
 
 export interface Movement {

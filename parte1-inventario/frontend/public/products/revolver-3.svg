@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480" role="img">
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f9"/><stop offset=".5" stop-color="#aab6cb"/><stop offset="1" stop-color="#6f7d97"/></linearGradient>
+<linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3ddee"/></linearGradient>
+<linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d5972"/><stop offset="1" stop-color="#1c2438"/></linearGradient>
+<linearGradient id="black" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d3347"/><stop offset="1" stop-color="#0c101b"/></linearGradient>
+<linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f5079"/><stop offset="1" stop-color="#1a2342"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b3202a"/><stop offset=".4" stop-color="#ff6b6b"/><stop offset="1" stop-color="#a91d27"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c58a45"/><stop offset="1" stop-color="#6e411a"/></linearGradient>
+<linearGradient id="amber" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+<linearGradient id="gun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b778c"/><stop offset=".5" stop-color="#3a4457"/><stop offset="1" stop-color="#171d2b"/></linearGradient>
+<radialGradient id="glass" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#5b8fe8"/><stop offset=".45" stop-color="#1e3a7a"/><stop offset="1" stop-color="#070d22"/></radialGradient>
+<radialGradient id="lens" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#7fb2ff"/><stop offset=".35" stop-color="#27468c"/><stop offset="1" stop-color="#050a1c"/></radialGradient>
+<filter id="sh" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="13" flood-color="#0f2560" flood-opacity=".32"/></filter>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#203a78"/><stop offset="1" stop-color="#0e1b3d"/></linearGradient></defs>
+<rect width="640" height="480" fill="url(#bg)"/>
+<circle cx="320" cy="236" r="210" fill="#3b82f6" opacity="0.16"/>
+<circle cx="320" cy="236" r="150" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+<ellipse cx="320" cy="420" rx="220" ry="26" fill="#0a1430" opacity=".85"/>
+<g filter="url(#sh)" >
+      <rect x="326" y="180" width="224" height="30" rx="6" fill="url(#gun)"/>
+      <rect x="326" y="204" width="190" height="20" rx="6" fill="url(#gun)"/>
+      <rect x="528" y="168" width="16" height="12" rx="3" fill="#0c101b"/>
+      <rect x="262" y="166" width="94" height="74" rx="16" fill="url(#gun)" stroke="#0c101b" stroke-width="2"/>
+      <rect x="274" y="176" width="10" height="54" rx="5" fill="#0c101b" opacity=".55"/><rect x="300" y="176" width="10" height="54" rx="5" fill="#0c101b" opacity=".55"/><rect x="326" y="176" width="10" height="54" rx="5" fill="#0c101b" opacity=".55"/>
+      <path d="M176 176 H264 V248 L234 262 H176 Z" fill="url(#gun)" stroke="#0c101b" stroke-width="2"/>
+      <path d="M180 170 q-14 -6 -12 -22 l18 6 z" fill="#0c101b"/>
+      <path d="M176 262 L240 262 L228 366 Q224 388 200 388 L172 380 Q154 374 160 354 Z" fill="url(#wood)" stroke="#4e2c0e" stroke-width="2"/>
+      <line x1="176" y1="286" x2="224" y2="280" stroke="#4e2c0e" stroke-width="2" opacity=".55"/><line x1="174" y1="310" x2="221" y2="304" stroke="#4e2c0e" stroke-width="2" opacity=".55"/><line x1="172" y1="334" x2="218" y2="328" stroke="#4e2c0e" stroke-width="2" opacity=".55"/><line x1="170" y1="358" x2="215" y2="352" stroke="#4e2c0e" stroke-width="2" opacity=".55"/>
+      <path d="M246 252 Q276 312 306 252" fill="none" stroke="#161c2b" stroke-width="9"/>
+      <rect x="268" y="244" width="8" height="26" rx="4" fill="#0c101b"/>
+      <ellipse cx="420" cy="190" rx="90" ry="4" fill="#fff" opacity="0.4"/></g>
+</svg>

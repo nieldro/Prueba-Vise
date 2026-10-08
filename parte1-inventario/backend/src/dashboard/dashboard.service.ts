@@ -9,6 +9,18 @@ interface DayRow {
   exits: number;
 }
 
+export interface CalendarDay {
+  day: string;
+  movements: number;
+  entries: number;
+  exits: number;
+}
+
+export interface CalendarResult {
+  month: string;
+  days: CalendarDay[];
+}
+
 export interface DashboardSummary {
   days: number;
   totals: {
@@ -78,6 +90,35 @@ export class DashboardService {
       series,
       latestMovements,
     };
+  }
+
+  /** Actividad por día de un mes (AAAA-MM), para pintar el calendario del tablero. */
+  async calendar(month?: string): Promise<CalendarResult> {
+    const target = month ?? this.currentMonth();
+    const days = await this.prisma.$queryRaw<CalendarDay[]>`
+      WITH r AS (
+        SELECT (to_date(${target} || '-01', 'YYYY-MM-DD')::timestamp AT TIME ZONE ${this.timezone}) AT TIME ZONE 'UTC' AS s,
+               ((to_date(${target} || '-01', 'YYYY-MM-DD') + interval '1 month')::timestamp AT TIME ZONE ${this.timezone}) AT TIME ZONE 'UTC' AS e
+      )
+      SELECT to_char((m.created_at AT TIME ZONE 'UTC' AT TIME ZONE ${this.timezone})::date, 'YYYY-MM-DD') AS day,
+             COUNT(*)::int AS movements,
+             COALESCE(SUM(m.quantity) FILTER (WHERE m.type = 'ENTRADA'), 0)::int AS entries,
+             COALESCE(SUM(m.quantity) FILTER (WHERE m.type = 'SALIDA'), 0)::int AS exits
+      FROM movements m, r
+      WHERE m.created_at >= r.s AND m.created_at < r.e
+      GROUP BY 1
+      ORDER BY 1`;
+    return { month: target, days };
+  }
+
+  private currentMonth(): string {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: this.timezone,
+      year: 'numeric',
+      month: '2-digit',
+    }).formatToParts(new Date());
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+    return `${get('year')}-${get('month')}`;
   }
 
   /** Una fila por día (incluso sin movimientos) en la zona horaria configurada. */

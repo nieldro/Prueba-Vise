@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CalendarQueryDto } from './dto/calendar-query.dto';
 import { SummaryQueryDto } from './dto/summary-query.dto';
 import { DashboardService } from './dashboard.service';
 
@@ -13,5 +14,11 @@ export class DashboardController {
   @ApiOperation({ summary: 'Indicadores y serie diaria de entradas y salidas' })
   summary(@Query() query: SummaryQueryDto) {
     return this.dashboard.summary(query.days);
+  }
+
+  @Get('calendar')
+  @ApiOperation({ summary: 'Movimientos por día de un mes, para el calendario' })
+  calendar(@Query() query: CalendarQueryDto) {
+    return this.dashboard.calendar(query.month);
   }
 }

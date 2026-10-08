@@ -73,10 +73,13 @@ Pruebas unitarias del backend: `npm test` (dentro de `parte1-inventario/backend`
 | GET | `/products/:id/kardex` | Historial con saldo acumulado y totales |
 | GET / POST | `/categories` | Categorías |
 | GET | `/dashboard/summary?days` | Indicadores y serie diaria para el tablero |
+| GET | `/dashboard/calendar?month=AAAA-MM` | Movimientos por día de un mes |
 
 **Códigos HTTP**: 200/201/204 éxito, 400 validación, 401 sin sesión o credenciales inválidas, 404 recurso inexistente, 409 conflicto (SKU repetido, producto con movimientos), 422 stock insuficiente, 429 demasiadas peticiones.
 
-**Interfaz**: resumen con indicadores y gráfica, productos (búsqueda, filtro, paginación, alta, edición, baja), movimientos, kardex por producto, categorías y stock bajo.
+**Interfaz**: resumen con indicadores, gráfica y calendario de actividad; productos con foto (búsqueda, filtro, paginación, alta, edición, baja); ficha de producto con galería de imágenes, información general, historial (kardex) y especificaciones técnicas; movimientos; categorías y stock bajo.
+
+**Datos de ejemplo**: catálogo de equipos de seguridad y vigilancia (cámaras, control de acceso, radios, protección personal, armamento autorizado, extintores) con 30 días de movimientos. Las imágenes son ilustraciones propias en SVG, generadas con `parte1-inventario/frontend/scripts/generate-product-art.mjs`.
 
 ## Estructura
 

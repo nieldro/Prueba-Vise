@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480" role="img">
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f9"/><stop offset=".5" stop-color="#aab6cb"/><stop offset="1" stop-color="#6f7d97"/></linearGradient>
+<linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3ddee"/></linearGradient>
+<linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d5972"/><stop offset="1" stop-color="#1c2438"/></linearGradient>
+<linearGradient id="black" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d3347"/><stop offset="1" stop-color="#0c101b"/></linearGradient>
+<linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f5079"/><stop offset="1" stop-color="#1a2342"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b3202a"/><stop offset=".4" stop-color="#ff6b6b"/><stop offset="1" stop-color="#a91d27"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c58a45"/><stop offset="1" stop-color="#6e411a"/></linearGradient>
+<linearGradient id="amber" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+<linearGradient id="gun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b778c"/><stop offset=".5" stop-color="#3a4457"/><stop offset="1" stop-color="#171d2b"/></linearGradient>
+<radialGradient id="glass" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#5b8fe8"/><stop offset=".45" stop-color="#1e3a7a"/><stop offset="1" stop-color="#070d22"/></radialGradient>
+<radialGradient id="lens" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#7fb2ff"/><stop offset=".35" stop-color="#27468c"/><stop offset="1" stop-color="#050a1c"/></radialGradient>
+<filter id="sh" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="13" flood-color="#0f2560" flood-opacity=".32"/></filter>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#203a78"/><stop offset="1" stop-color="#0e1b3d"/></linearGradient></defs>
+<rect width="640" height="480" fill="url(#bg)"/>
+<circle cx="320" cy="236" r="210" fill="#3b82f6" opacity="0.16"/>
+<circle cx="320" cy="236" r="150" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+<ellipse cx="320" cy="420" rx="220" ry="26" fill="#0a1430" opacity=".85"/>
+<g filter="url(#sh)" >
+      <rect x="80" y="196" width="480" height="132" rx="16" fill="url(#dark)"/>
+      <rect x="80" y="196" width="480" height="30" rx="16" fill="#fff" opacity=".14"/>
+      <rect x="104" y="226" width="150" height="76" rx="10" fill="#0a1226" stroke="#3b82f6" stroke-width="2"/>
+      <text x="179" y="256" fill="#7dd3fc" font-family="Inter,Arial" font-weight="700" font-size="20" text-anchor="middle">NVR 16CH</text>
+      <rect x="120" y="268" width="118" height="6" rx="3" fill="#3b82f6" opacity=".7"/>
+      <rect x="120" y="282" width="80" height="6" rx="3" fill="#3b82f6" opacity=".45"/>
+      <rect x="290" y="222" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="232" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="242" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="252" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="262" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="272" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="282" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/><rect x="290" y="292" width="170" height="4" rx="2" fill="#0c101b" opacity=".7"/>
+      <circle cx="494" cy="236" r="6" fill="#34d399" /><circle cx="516" cy="236" r="6" fill="#38bdf8" /><circle cx="538" cy="236" r="6" fill="#fbbf24" />
+      <rect x="486" y="262" width="56" height="30" rx="8" fill="url(#metal)"/>
+      <rect x="100" y="328" width="24" height="12" rx="4" fill="#0c101b"/><rect x="516" y="328" width="24" height="12" rx="4" fill="#0c101b"/></g>
+</svg>
