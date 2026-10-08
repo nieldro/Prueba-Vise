@@ -1,0 +1,15 @@
+# Decisiones técnicas
+
+**Stack.** NestJS (módulos, inyección de dependencias y validación por decoradores), PostgreSQL con Prisma (migraciones versionadas, tipado extremo a extremo) y React con Vite y TypeScript. Docker Compose levanta todo con un comando.
+
+**Consistencia del stock.** Es el punto más delicado. Una salida no hace "leer, comparar, escribir": ejecuta un `UPDATE ... WHERE stock >= cantidad` dentro de una transacción. Postgres bloquea la fila, así que dos salidas simultáneas se serializan y la segunda ve el stock ya descontado. Como segunda línea de defensa, la base tiene restricciones `CHECK` (stock no negativo, cantidad positiva). Se comprobó con 12 salidas simultáneas de 3 unidades sobre un stock de 20: 6 exitosas, 6 rechazadas con 422 y stock final de 2.
+
+**Kardex.** Cada movimiento guarda el saldo resultante (`balanceAfter`), calculado en la misma transacción que lo aplica. Así el kardex se lee sin recalcular y es auditable. El stock del producto solo cambia por movimientos; crear un producto con stock inicial genera su entrada inicial.
+
+**Seguridad.** Contraseñas con bcrypt (coste 12); el login gasta el mismo tiempo exista o no el correo. El token JWT expira (1 h por defecto) y se valida contra la base en cada petición, de modo que un usuario eliminado pierde acceso de inmediato. El guard es global: una ruta nueva nace protegida y solo se abre con `@Public()`. Además: validación con lista blanca (`whitelist` + `forbidNonWhitelisted`), límite de peticiones (más estricto en el login), `helmet`, CORS por entorno, y variables de entorno validadas al arrancar (la app no inicia con un `JWT_SECRET` débil).
+
+**Errores.** Un filtro traduce los errores de Prisma a 404 o 409 sin filtrar detalles internos. Las reglas de negocio responden con su código propio: 422 para stock insuficiente, 409 para SKU duplicado o para borrar un producto que ya tiene historial.
+
+**Alcance deliberado.** No hay CRUD de usuarios (la prueba no lo pide). Los productos con movimientos no se eliminan porque el kardex es un registro histórico. Las pruebas unitarias cubren el servicio de movimientos, que concentra la lógica crítica; los componentes de interfaz se verificaron manualmente en el navegador.
+
+**Interfaz.** Estilo basado en la referencia entregada, con la paleta de VISE y el logo en el encabezado. El efecto 3D (inclinación con perspectiva, relieve en botones y capas) usa solo CSS y un pequeño componente, sin librerías 3D, y respeta `prefers-reduced-motion`. Las páginas se cargan bajo demanda (el bundle inicial baja de 640 kB a 215 kB).

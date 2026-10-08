@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-inventario}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en el archivo .env}
+      POSTGRES_DB: ${POSTGRES_DB:-inventario}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./parte1-inventario/backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-inventario}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-inventario}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET (minimo 32 caracteres) en el archivo .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+      PORT: 3000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      LOW_STOCK_THRESHOLD: ${LOW_STOCK_THRESHOLD:-10}
+      TZ_NAME: ${TZ_NAME:-America/Bogota}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@vise.com}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin123*}
+    ports:
+      - '${BACKEND_PORT:-3000}:3000'
+
+  frontend:
+    build: ./parte1-inventario/frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '${FRONTEND_PORT:-5173}:80'
+
+volumes:
+  db-data:
