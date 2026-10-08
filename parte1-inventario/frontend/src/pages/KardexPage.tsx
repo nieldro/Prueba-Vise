@@ -39,19 +39,19 @@ export function KardexPage() {
       />
 
       <section className="kpis kpis--three" aria-label="Resumen del producto">
-        <TiltCard className="kpi kpi--violet">
+        <TiltCard className="kpi kpi--coral">
           <div className="kpi__icon"><Boxes size={26} /></div>
           <span className="kpi__label">Saldo actual</span>
           <strong className="kpi__value">{formatInt(product.stock)}</strong>
           <span className="kpi__foot">Unidades disponibles</span>
         </TiltCard>
-        <TiltCard className="kpi kpi--green">
+        <TiltCard className="kpi kpi--cyan">
           <div className="kpi__icon"><ArrowDownToLine size={26} /></div>
           <span className="kpi__label">Total entradas</span>
           <strong className="kpi__value">{formatInt(totals.entries)}</strong>
           <span className="kpi__foot">Desde el primer movimiento</span>
         </TiltCard>
-        <TiltCard className="kpi kpi--blue">
+        <TiltCard className="kpi kpi--purple">
           <div className="kpi__icon"><ArrowUpFromLine size={26} /></div>
           <span className="kpi__label">Total salidas</span>
           <strong className="kpi__value">{formatInt(totals.exits)}</strong>
@@ -80,7 +80,7 @@ export function KardexPage() {
                     <tr key={m.id}>
                       <td>{formatDateTime(m.createdAt)}</td>
                       <td>
-                        <span className={`badge ${m.type === 'ENTRADA' ? 'badge--ok' : 'badge--info'}`}>
+                        <span className={`badge ${m.type === 'ENTRADA' ? 'badge--ok' : 'badge--out'}`}>
                           {m.type === 'ENTRADA' ? 'Entrada' : 'Salida'}
                         </span>
                       </td>
