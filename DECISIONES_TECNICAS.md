@@ -24,4 +24,4 @@
 
 **Datos y privacidad.** Validación estricta (6 a 10 dígitos ASCII), duplicados eliminados antes de consultar y cédulas inválidas reportadas, no descartadas. El log lleva marca de tiempo y **enmascara** las cédulas. El reporte se escribe de forma atómica y guarda la cédula como texto.
 
-**Calidad.** 162 pruebas (datos inválidos, servicio caído, timeouts, 429, flujo completo) con 97 % de cobertura, `ruff` y `mypy` estricto, y CI que también construye las imágenes de Docker.
+**Calidad.** 162 pruebas (datos inválidos, servicio caído, timeouts, 429, flujo completo) con 97 % de cobertura, `ruff` y `mypy` estricto, y un CI que levanta todo con Docker Compose, prueba la API y el login, y ejecuta el RPA.

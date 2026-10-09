@@ -4,6 +4,8 @@
 
 # Prueba técnica: Desarrollador Full Stack
 
+[![CI](https://github.com/nieldro/Prueba-Vise/actions/workflows/ci.yml/badge.svg)](https://github.com/nieldro/Prueba-Vise/actions/workflows/ci.yml)
+
 Empresa: **VISE Ltda**. El repositorio tiene las dos partes en carpetas separadas:
 
 | Parte | Carpeta | Tecnologías |
@@ -44,6 +46,11 @@ docker compose down -v                          # detener y borrar la base de da
 ```
 
 > `POSTGRES_PASSWORD` se inserta en una URL de conexión; usa solo letras y números.
+
+**Verificado en cada subida** por GitHub Actions ([ver ejecuciones](https://github.com/nieldro/Prueba-Vise/actions)):
+construye las imágenes, levanta todos los servicios, comprueba la API, la web y el servicio
+simulado, inicia sesión con el usuario de prueba y ejecuta el RPA, cuyo reporte queda como
+artefacto descargable de la ejecución.
 
 ## Parte 1: inventario
 
