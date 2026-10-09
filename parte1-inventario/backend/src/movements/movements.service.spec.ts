@@ -1,4 +1,5 @@
-import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { MovementType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,6 +23,7 @@ describe('MovementsService', () => {
   let tx: ReturnType<typeof createTx>;
   let prisma: {
     $transaction: jest.Mock;
+    $queryRaw: jest.Mock;
     product: { findUnique: jest.Mock };
     movement: { count: jest.Mock; findMany: jest.Mock; groupBy: jest.Mock };
   };
@@ -29,12 +31,20 @@ describe('MovementsService', () => {
   beforeEach(async () => {
     tx = createTx();
     prisma = {
-      $transaction: jest.fn((cb: (t: typeof tx) => unknown) => cb(tx)),
+      // Acepta tanto la forma con callback (transaccion interactiva) como la lista de promesas.
+      $transaction: jest.fn((arg: ((t: typeof tx) => unknown) | Promise<unknown>[]) =>
+        Array.isArray(arg) ? Promise.all(arg) : arg(tx),
+      ),
+      $queryRaw: jest.fn(),
       product: { findUnique: jest.fn() },
       movement: { count: jest.fn(), findMany: jest.fn(), groupBy: jest.fn() },
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [MovementsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        MovementsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: { get: () => 'America/Bogota' } },
+      ],
     }).compile();
     service = moduleRef.get(MovementsService);
   });
@@ -142,6 +152,54 @@ describe('MovementsService', () => {
       await service.register({ productId: 7, type: MovementType.SALIDA, quantity: 1 }, 1);
 
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('list', () => {
+    beforeEach(() => {
+      prisma.movement.count.mockResolvedValue(3);
+      prisma.movement.findMany.mockResolvedValue([{ id: 3 }, { id: 2 }, { id: 1 }]);
+    });
+
+    it('pagina el historial sin filtros, del más reciente al más antiguo', async () => {
+      const result = await service.list({ page: 2, limit: 2 });
+
+      expect(prisma.movement.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {},
+          skip: 2,
+          take: 2,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        }),
+      );
+      expect(result.meta).toEqual({ total: 3, page: 2, limit: 2, totalPages: 2 });
+    });
+
+    it('aplica los filtros de tipo y producto', async () => {
+      await service.list({ page: 1, limit: 10, type: MovementType.SALIDA, productId: 7 });
+
+      expect(prisma.movement.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { type: MovementType.SALIDA, productId: 7 } }),
+      );
+    });
+
+    it('convierte el día elegido en un rango de fechas en UTC', async () => {
+      const start = new Date('2026-10-08T05:00:00Z');
+      const end = new Date('2026-10-09T05:00:00Z');
+      prisma.$queryRaw.mockResolvedValue([{ s: start, e: end }]);
+
+      await service.list({ page: 1, limit: 10, date: '2026-10-08' });
+
+      expect(prisma.movement.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { createdAt: { gte: start, lt: end } } }),
+      );
+    });
+
+    it('rechaza con 400 una fecha inexistente', async () => {
+      await expect(service.list({ page: 1, limit: 10, date: '2026-02-31' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.movement.findMany).not.toHaveBeenCalled();
     });
   });
 

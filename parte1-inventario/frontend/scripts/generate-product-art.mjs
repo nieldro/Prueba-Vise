@@ -279,9 +279,9 @@ const ART = {
 };
 
 const BACKDROPS = {
-  1: { bg: ['#f4f8ff', '#d9e5fb'], floor: '#c4d4f2', ring: '#ffffff', zoom: 1, label: 'principal' },
-  2: { bg: ['#e8f8fc', '#bfe6f0'], floor: '#a9d9e6', ring: '#ffffff', zoom: 1.7, label: 'detalle' },
-  3: { bg: ['#203a78', '#0e1b3d'], floor: '#0a1430', ring: '#3b82f6', zoom: 1, label: 'oscura' },
+  1: { bg: ['#f7f9f8', '#dde6e1'], floor: '#c9d6ce', ring: '#ffffff', zoom: 1, label: 'principal' },
+  2: { bg: ['#eaf5eb', '#c5e0c8'], floor: '#b3d2b7', ring: '#ffffff', zoom: 1.7, label: 'detalle' },
+  3: { bg: ['#2a5b9c', '#12335f'], floor: '#0d2447', ring: '#6f9bd3', zoom: 1, label: 'oscura' },
 };
 
 function compose(art, view) {

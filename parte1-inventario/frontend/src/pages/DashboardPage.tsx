@@ -24,31 +24,35 @@ import { formatDateTime, formatDay, formatInt, percentChange } from '../lib/form
 const RANGES = [7, 14, 30] as const;
 
 interface KpiProps {
-  tone: 'cyan' | 'purple' | 'coral' | 'amber';
+  tone: 'green' | 'blue' | 'teal' | 'amber';
   label: string;
   value: number;
   icon: ReactNode;
+  /** Pantalla a la que lleva la tarjeta al hacer clic. */
+  to: string;
   delta?: number | null;
   footnote?: string;
 }
 
-function Kpi({ tone, label, value, icon, delta, footnote }: KpiProps) {
+function Kpi({ tone, label, value, icon, to, delta, footnote }: KpiProps) {
   return (
-    <TiltCard className={`kpi kpi--${tone}`}>
-      <div className="kpi__icon">{icon}</div>
-      <span className="kpi__label">{label}</span>
-      <strong className="kpi__value">{formatInt(value)}</strong>
-      <span className="kpi__foot">
-        {delta !== undefined && delta !== null ? (
-          <>
-            {delta >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-            {Math.abs(delta).toFixed(1)}% vs. periodo anterior
-          </>
-        ) : (
-          footnote
-        )}
-      </span>
-    </TiltCard>
+    <Link className="kpi-link" to={to} aria-label={`${label}: ${formatInt(value)}. Ver detalle`}>
+      <TiltCard className={`kpi kpi--${tone}`}>
+        <div className="kpi__icon">{icon}</div>
+        <span className="kpi__label">{label}</span>
+        <strong className="kpi__value">{formatInt(value)}</strong>
+        <span className="kpi__foot">
+          {delta !== undefined && delta !== null ? (
+            <>
+              {delta >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
+              {Math.abs(delta) > 999 ? '>999' : Math.abs(delta).toFixed(1)}% vs. periodo anterior
+            </>
+          ) : (
+            footnote
+          )}
+        </span>
+      </TiltCard>
+    </Link>
   );
 }
 
@@ -93,26 +97,29 @@ export function DashboardPage() {
 
       <section className="kpis" aria-label="Indicadores">
         <Kpi
-          tone="cyan"
+          tone="green"
           label="Unidades entrantes"
           value={totals.entries}
           icon={<ArrowDownToLine size={26} />}
+          to="/movimientos?type=ENTRADA"
           delta={percentChange(totals.entries, totals.previousEntries)}
           footnote="Sin periodo previo para comparar"
         />
         <Kpi
-          tone="purple"
+          tone="blue"
           label="Unidades salientes"
           value={totals.exits}
           icon={<ArrowUpFromLine size={26} />}
+          to="/movimientos?type=SALIDA"
           delta={percentChange(totals.exits, totals.previousExits)}
           footnote="Sin periodo previo para comparar"
         />
         <Kpi
-          tone="coral"
+          tone="teal"
           label="Unidades en stock"
           value={totals.unitsInStock}
           icon={<Boxes size={26} />}
+          to="/productos"
           footnote={`${formatInt(totals.products)} productos activos`}
         />
         <Kpi
@@ -120,6 +127,7 @@ export function DashboardPage() {
           label="Productos con stock bajo"
           value={totals.lowStockProducts}
           icon={<TriangleAlert size={26} />}
+          to="/stock-bajo"
           footnote="Con 10 unidades o menos"
         />
       </section>
@@ -139,12 +147,12 @@ export function DashboardPage() {
               <AreaChart data={series} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gIn" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#11a5bd" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#11a5bd" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor="#2e7d32" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#2e7d32" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gOut" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#d6338f" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#d6338f" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor="#1f4e8c" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#1f4e8c" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="#e3e9f4" strokeDasharray="4 6" vertical={false} />
@@ -163,8 +171,8 @@ export function DashboardPage() {
                   formatter={(value, name) => [formatInt(Number(value)), name === 'entries' ? 'Entradas' : 'Salidas']}
                   contentStyle={{ borderRadius: 14, border: 'none', boxShadow: '0 12px 30px rgba(31,78,140,.22)' }}
                 />
-                <Area type="monotone" dataKey="entries" stroke="#11a5bd" strokeWidth={3} fill="url(#gIn)" />
-                <Area type="monotone" dataKey="exits" stroke="#d6338f" strokeWidth={3} fill="url(#gOut)" />
+                <Area type="monotone" dataKey="entries" stroke="#2e7d32" strokeWidth={3} fill="url(#gIn)" />
+                <Area type="monotone" dataKey="exits" stroke="#1f4e8c" strokeWidth={3} fill="url(#gOut)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

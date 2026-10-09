@@ -125,17 +125,17 @@ export function ProductDetailPage() {
 
           <div className="stack">
             <section className="stat-tiles" aria-label="Indicadores del producto">
-              <TiltCard className="kpi kpi--coral kpi--compact">
+              <TiltCard className="kpi kpi--teal kpi--compact">
                 <span className="kpi__label">Valor en inventario</span>
                 <strong className="kpi__value kpi__value--sm">{formatMoney(inventoryValue)}</strong>
                 <div className="kpi__icon kpi__icon--corner"><Wallet size={20} /></div>
               </TiltCard>
-              <TiltCard className="kpi kpi--cyan kpi--compact">
+              <TiltCard className="kpi kpi--green kpi--compact">
                 <span className="kpi__label">Entradas</span>
                 <strong className="kpi__value kpi__value--sm">{formatInt(recent.data?.totals.entries ?? 0)}</strong>
                 <div className="kpi__icon kpi__icon--corner"><ArrowDownToLine size={20} /></div>
               </TiltCard>
-              <TiltCard className="kpi kpi--purple kpi--compact">
+              <TiltCard className="kpi kpi--blue kpi--compact">
                 <span className="kpi__label">Salidas</span>
                 <strong className="kpi__value kpi__value--sm">{formatInt(recent.data?.totals.exits ?? 0)}</strong>
                 <div className="kpi__icon kpi__icon--corner"><ArrowUpFromLine size={20} /></div>

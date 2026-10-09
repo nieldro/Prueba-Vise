@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { KardexQueryDto } from './dto/kardex-query.dto';
+import { ListMovementsQueryDto } from './dto/list-movements-query.dto';
 import { MovementsService } from './movements.service';
 
 @ApiTags('movements')
@@ -10,6 +11,12 @@ import { MovementsService } from './movements.service';
 @Controller()
 export class MovementsController {
   constructor(private readonly movements: MovementsService) {}
+
+  @Get('movements')
+  @ApiOperation({ summary: 'Historial de movimientos con filtros y paginación' })
+  list(@Query() query: ListMovementsQueryDto) {
+    return this.movements.list(query);
+  }
 
   @Post('movements')
   @ApiOperation({ summary: 'Registra una entrada o salida (rechaza stock negativo)' })

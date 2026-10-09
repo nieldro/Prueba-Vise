@@ -49,6 +49,8 @@ export interface ProductInput {
   brand?: string;
   description?: string;
   unit?: string;
+  /** Imagen principal (URL o ruta). Cadena vacía = quitar. Solo se envía si cambió. */
+  imageUrl?: string;
   initialStock?: number;
 }
 
@@ -72,6 +74,21 @@ export interface Movement {
   balanceAfter: number;
   note: string | null;
   createdAt: string;
+}
+
+/** Fila del historial general: el movimiento junto con su producto y quien lo registró. */
+export interface MovementRow extends Movement {
+  product: { id: number; name: string; sku: string };
+  user: { name: string } | null;
+}
+
+export interface MovementFilters {
+  page: number;
+  limit: number;
+  type?: MovementType;
+  productId?: number;
+  date?: string;
+  search?: string;
 }
 
 export interface MovementInput {

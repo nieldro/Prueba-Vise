@@ -6,7 +6,9 @@ import type {
   Kardex,
   LoginResponse,
   Movement,
+  MovementFilters,
   MovementInput,
+  MovementRow,
   Paginated,
   Product,
   ProductInput,
@@ -39,9 +41,14 @@ export const productsApi = {
 export const categoriesApi = {
   list: () => request<Category[]>('/categories'),
   create: (name: string) => request<Category>('/categories', { method: 'POST', body: { name } }),
+  rename: (id: number, name: string) =>
+    request<Category>(`/categories/${id}`, { method: 'PATCH', body: { name } }),
+  remove: (id: number) => request<void>(`/categories/${id}`, { method: 'DELETE' }),
 };
 
 export const movementsApi = {
+  list: (filters: MovementFilters) =>
+    request<Paginated<MovementRow>>('/movements', { query: { ...filters } }),
   register: (input: MovementInput) =>
     request<Movement>('/movements', { method: 'POST', body: input }),
   kardex: (productId: number, page: number, limit = 15) =>

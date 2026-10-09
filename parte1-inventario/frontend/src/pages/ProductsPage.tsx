@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeftRight, BookOpen, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, Download, FilterX, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { productsApi } from '../api/endpoints';
 import type { Product } from '../api/types';
 import { EmptyState, ErrorState, Loading, StockBadge } from '../components/feedback';
@@ -13,6 +13,7 @@ import { useToast } from '../components/Toast';
 import { MovementForm } from '../features/MovementForm';
 import { ProductFormModal } from '../features/ProductFormModal';
 import { useCategories } from '../features/useCategories';
+import { downloadCsv, fetchAllPages, todayStamp } from '../lib/csv';
 import { formatInt, formatMoney } from '../lib/format';
 import { useDebounced } from '../lib/useDebounced';
 
@@ -23,12 +24,20 @@ export function ProductsPage() {
   const queryClient = useQueryClient();
   const [params, setParams] = useSearchParams();
 
-  // El termino de busqueda vive en la URL: asi funciona desde la barra superior y se puede compartir.
+  // Búsqueda y categoría viven en la URL: así funcionan desde la barra superior, desde
+  // Categorías, y la vista se puede compartir.
   const urlSearch = params.get('search') ?? '';
+  const categoryId: number | '' = params.get('categoryId') ? Number(params.get('categoryId')) : '';
   const [searchInput, setSearchInput] = useState(urlSearch);
   const search = useDebounced(searchInput);
-  const [categoryId, setCategoryId] = useState<number | ''>('');
   const [page, setPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
+
+  // Si la URL cambia desde fuera (buscador de la barra superior), el campo se sincroniza.
+  useEffect(() => {
+    setSearchInput(urlSearch);
+    setPage(1);
+  }, [urlSearch]);
 
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
   const [moving, setMoving] = useState<Product | null>(null);
@@ -60,11 +69,47 @@ export function ProductsPage() {
     },
   });
 
-  const changeSearch = (value: string) => {
-    setSearchInput(value);
+  const updateParams = (changes: Record<string, string>) => {
+    const next = new URLSearchParams(params);
+    Object.entries(changes).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)));
+    setParams(next, { replace: true });
     setPage(1);
-    setParams(value ? { search: value } : {}, { replace: true });
   };
+
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const rows = await fetchAllPages((p, limit) =>
+        productsApi.list({
+          page: p,
+          limit,
+          categoryId: categoryId === '' ? undefined : categoryId,
+          search: search || undefined,
+        }),
+      );
+      downloadCsv(
+        `productos-${todayStamp()}.csv`,
+        ['SKU', 'Producto', 'Categoría', 'Marca', 'Unidad', 'Precio', 'Stock', 'Valor en inventario'],
+        rows.map((p) => [
+          p.sku,
+          p.name,
+          p.category.name,
+          p.brand,
+          p.unit,
+          Number(p.price),
+          p.stock,
+          Number(p.price) * p.stock,
+        ]),
+      );
+      toast.success(`${rows.length} productos exportados`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo exportar');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const hasFilters = Boolean(searchInput || categoryId !== '');
 
   return (
     <>
@@ -72,9 +117,14 @@ export function ProductsPage() {
         title="Productos"
         subtitle="Catálogo, precios y existencias."
         actions={
-          <button type="button" className="btn btn--primary" onClick={() => setEditing('new')}>
-            <Plus size={18} /> Nuevo producto
-          </button>
+          <>
+            <button type="button" className="btn btn--ghost" onClick={() => void exportCsv()} disabled={exporting}>
+              <Download size={18} /> {exporting ? 'Exportando...' : 'Exportar CSV'}
+            </button>
+            <button type="button" className="btn btn--primary" onClick={() => setEditing('new')}>
+              <Plus size={18} /> Nuevo producto
+            </button>
+          </>
         }
       />
 
@@ -85,7 +135,10 @@ export function ProductsPage() {
             <input
               type="search"
               value={searchInput}
-              onChange={(e) => changeSearch(e.target.value)}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                updateParams({ search: e.target.value });
+              }}
               placeholder="Nombre o SKU"
               aria-label="Buscar"
             />
@@ -93,10 +146,7 @@ export function ProductsPage() {
           <select
             className="select"
             value={categoryId}
-            onChange={(e) => {
-              setCategoryId(e.target.value ? Number(e.target.value) : '');
-              setPage(1);
-            }}
+            onChange={(e) => updateParams({ categoryId: e.target.value })}
             aria-label="Filtrar por categoría"
           >
             <option value="">Todas las categorías</option>
@@ -106,6 +156,19 @@ export function ProductsPage() {
               </option>
             ))}
           </select>
+          {hasFilters && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--small"
+              onClick={() => {
+                setSearchInput('');
+                setParams({}, { replace: true });
+                setPage(1);
+              }}
+            >
+              <FilterX size={16} /> Limpiar filtros
+            </button>
+          )}
         </div>
 
         {list.isLoading ? (
@@ -113,7 +176,7 @@ export function ProductsPage() {
         ) : list.isError ? (
           <ErrorState error={list.error} onRetry={() => void list.refetch()} />
         ) : list.data && list.data.data.length === 0 ? (
-          <EmptyState title="Sin resultados" hint="Prueba con otra busqueda o categoría." />
+          <EmptyState title="Sin resultados" hint="Prueba con otra búsqueda o categoría." />
         ) : (
           list.data && (
             <>

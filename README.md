@@ -71,13 +71,20 @@ Pruebas unitarias del backend: `npm test` (dentro de `parte1-inventario/backend`
 | GET / POST / PATCH / DELETE | `/products`, `/products/:id` | CRUD con validación |
 | POST | `/movements` | Registra una entrada o salida; rechaza stock negativo |
 | GET | `/products/:id/kardex` | Historial con saldo acumulado y totales |
-| GET / POST | `/categories` | Categorías |
+| GET / POST / PATCH / DELETE | `/categories`, `/categories/:id` | Categorías (no se elimina una con productos) |
+| GET | `/movements?page&limit&type&productId&date&search` | Historial general de movimientos |
 | GET | `/dashboard/summary?days` | Indicadores y serie diaria para el tablero |
 | GET | `/dashboard/calendar?month=AAAA-MM` | Movimientos por día de un mes |
 
 **Códigos HTTP**: 200/201/204 éxito, 400 validación, 401 sin sesión o credenciales inválidas, 404 recurso inexistente, 409 conflicto (SKU repetido, producto con movimientos), 422 stock insuficiente, 429 demasiadas peticiones.
 
-**Interfaz**: resumen con indicadores, gráfica y calendario de actividad; productos con foto (búsqueda, filtro, paginación, alta, edición, baja); ficha de producto con galería de imágenes, información general, historial (kardex) y especificaciones técnicas; movimientos; categorías y stock bajo.
+**Interfaz** (cada botón tiene una acción real):
+- **Resumen**: tarjetas que abren la vista filtrada correspondiente, gráfica por periodo (7, 14 o 30 días), calendario de actividad que lleva al historial del día elegido, últimos movimientos y productos por reponer.
+- **Productos**: foto, búsqueda, filtro por categoría, paginación, alta, edición, baja, registro de movimiento desde la fila y exportación a CSV.
+- **Ficha de producto**: galería de imágenes, información general, historial (kardex) y especificaciones técnicas.
+- **Movimientos**: historial con filtros (tipo, producto, día, texto), paginación, exportación a CSV y alta de movimientos.
+- **Categorías**: crear, renombrar, eliminar (si está vacía) y abrir sus productos.
+- **Stock bajo**: umbral configurable.
 
 **Datos de ejemplo**: catálogo de equipos de seguridad y vigilancia (cámaras, control de acceso, radios, protección personal, armamento autorizado, extintores) con 30 días de movimientos. Las imágenes son ilustraciones propias en SVG, generadas con `parte1-inventario/frontend/scripts/generate-product-art.mjs`.
 

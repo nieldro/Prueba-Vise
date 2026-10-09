@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
@@ -56,6 +57,20 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(1000)
   description?: string;
+
+  @ApiPropertyOptional({
+    example: '/products/dome-1.svg',
+    description: 'URL (http/https) o ruta de la imagen principal. Vacío la quita.',
+  })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(500)
+  @ValidateIf((_, value) => value !== '')
+  @Matches(/^(https?:\/\/|\/)\S+$/, {
+    message: 'imageUrl debe ser una URL http/https o una ruta que empiece con /',
+  })
+  imageUrl?: string;
 
   @ApiPropertyOptional({ example: 'Und', description: 'Unidad de medida' })
   @IsOptional()

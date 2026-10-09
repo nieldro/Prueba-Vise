@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { dashboardApi } from '../api/endpoints';
 import { formatInt } from '../lib/format';
@@ -125,11 +126,18 @@ export function Calendar() {
             <span className="muted">Sin movimientos</span>
           )}
         </div>
-        {monthKey !== today.slice(0, 7) && (
-          <button type="button" className="btn btn--ghost btn--small" onClick={goToday}>
-            Ir a hoy
-          </button>
-        )}
+        <div className="calendar__actions">
+          {detail && (
+            <Link className="btn btn--primary btn--small" to={`/movimientos?date=${selected}`}>
+              Ver movimientos
+            </Link>
+          )}
+          {monthKey !== today.slice(0, 7) && (
+            <button type="button" className="btn btn--ghost btn--small" onClick={goToday}>
+              Ir a hoy
+            </button>
+          )}
+        </div>
       </footer>
     </div>
   );

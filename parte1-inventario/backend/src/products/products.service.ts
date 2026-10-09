@@ -48,10 +48,10 @@ export class ProductsService {
 
   /** Crea el producto y, si hay stock inicial, su entrada en el kardex dentro de la misma transacción. */
   async create(dto: CreateProductDto, userId: number): Promise<ProductWithCategory> {
-    const { initialStock = 0, ...data } = dto;
+    const { initialStock = 0, imageUrl, ...data } = dto;
     return this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
-        data: { ...data, stock: initialStock },
+        data: { ...data, stock: initialStock, images: imageUrl ? [imageUrl] : [] },
         include: productInclude,
       });
       if (initialStock > 0) {
@@ -70,8 +70,14 @@ export class ProductsService {
     });
   }
 
+  /** `imageUrl` reemplaza la galería por esa imagen; si no viene, las imágenes no se tocan. */
   update(id: number, dto: UpdateProductDto): Promise<ProductWithCategory> {
-    return this.prisma.product.update({ where: { id }, data: dto, include: productInclude });
+    const { imageUrl, ...data } = dto;
+    return this.prisma.product.update({
+      where: { id },
+      data: { ...data, ...(imageUrl !== undefined && { images: imageUrl ? [imageUrl] : [] }) },
+      include: productInclude,
+    });
   }
 
   /** Falla con 409 si el producto tiene movimientos: el kardex es un registro historico. */

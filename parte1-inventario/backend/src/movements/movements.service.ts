@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Movement, MovementType, Prisma } from '@prisma/client';
 import { Paginated, paginated, skipOf } from '../common/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { KardexQueryDto } from './dto/kardex-query.dto';
+import { ListMovementsQueryDto } from './dto/list-movements-query.dto';
 
 export interface KardexResult {
   product: { id: number; name: string; sku: string; stock: number };
@@ -11,9 +18,64 @@ export interface KardexResult {
   movements: Paginated<Movement>;
 }
 
+const movementInclude = {
+  product: { select: { id: true, name: true, sku: true } },
+  user: { select: { name: true } },
+} satisfies Prisma.MovementInclude;
+export type MovementRow = Prisma.MovementGetPayload<{ include: typeof movementInclude }>;
+
 @Injectable()
 export class MovementsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly timezone: string;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    config: ConfigService,
+  ) {
+    this.timezone = config.get<string>('TZ_NAME', 'America/Bogota');
+  }
+
+  /** Historial general de movimientos con filtros por tipo, producto, día y texto. */
+  async list(query: ListMovementsQueryDto): Promise<Paginated<MovementRow>> {
+    const { page, limit, type, productId, date, search } = query;
+    const where: Prisma.MovementWhereInput = {
+      ...(type && { type }),
+      ...(productId && { productId }),
+      ...(search && {
+        product: {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { sku: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+      }),
+      ...(date && { createdAt: await this.dayRange(date) }),
+    };
+
+    const [total, data] = await this.prisma.$transaction([
+      this.prisma.movement.count({ where }),
+      this.prisma.movement.findMany({
+        where,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        skip: skipOf(page, limit),
+        take: limit,
+        include: movementInclude,
+      }),
+    ]);
+    return paginated(data, total, page, limit);
+  }
+
+  /** Límites (en UTC) del día local indicado; rechaza fechas inexistentes como 2026-02-31. */
+  private async dayRange(date: string): Promise<{ gte: Date; lt: Date }> {
+    const parsed = new Date(`${date}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+      throw new BadRequestException('date no es una fecha válida');
+    }
+    const [bounds] = await this.prisma.$queryRaw<Array<{ s: Date; e: Date }>>`
+      SELECT ((${date}::date)::timestamp AT TIME ZONE ${this.timezone}) AT TIME ZONE 'UTC' AS s,
+             ((${date}::date + 1)::timestamp AT TIME ZONE ${this.timezone}) AT TIME ZONE 'UTC' AS e`;
+    return { gte: bounds.s, lt: bounds.e };
+  }
 
   /**
    * Registra una entrada o salida de forma atómica.

@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -19,5 +30,18 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Crea una categoría' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categories.create(dto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Renombra una categoría' })
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateCategoryDto) {
+    return this.categories.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Elimina una categoría sin productos' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.categories.remove(id);
   }
 }

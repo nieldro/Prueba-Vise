@@ -29,6 +29,8 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
   const [brand, setBrand] = useState(product?.brand ?? '');
   const [unit, setUnit] = useState(product?.unit ?? 'Und');
   const [description, setDescription] = useState(product?.description ?? '');
+  const originalImage = product?.images[0] ?? '';
+  const [imageUrl, setImageUrl] = useState(originalImage);
   const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useMutation({
@@ -56,6 +58,9 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
     if (price === '' || !Number.isFinite(priceNumber) || priceNumber < 0) {
       return setFormError('El precio debe ser un número mayor o igual a 0');
     }
+    if (imageUrl.trim() && !/^(https?:\/\/|\/)\S+$/.test(imageUrl.trim())) {
+      return setFormError('La imagen debe ser una URL que empiece con http:// o https://');
+    }
     if (stockNumber !== undefined && (!Number.isInteger(stockNumber) || stockNumber < 0)) {
       return setFormError('El stock inicial debe ser un entero mayor o igual a 0');
     }
@@ -69,6 +74,8 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
       unit: unit.trim() || 'Und',
       ...(brand.trim() && { brand: brand.trim() }),
       ...(description.trim() && { description: description.trim() }),
+      // Solo se envía si cambió: así editar otros datos no reemplaza la galería completa.
+      ...(imageUrl.trim() !== originalImage && { imageUrl: imageUrl.trim() }),
       ...(!isEdit && stockNumber !== undefined && { initialStock: stockNumber }),
     });
   };
@@ -142,6 +149,16 @@ export function ProductFormModal({ product, onClose }: ProductFormModalProps) {
             <input value={unit} maxLength={20} onChange={(e) => setUnit(e.target.value)} placeholder="Und, Caja, Par" />
           </label>
         </div>
+
+        <label className="field">
+          <span>Imagen (URL, opcional)</span>
+          <input
+            value={imageUrl}
+            maxLength={500}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
 
         <label className="field">
           <span>Descripción</span>
