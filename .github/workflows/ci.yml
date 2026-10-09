@@ -41,7 +41,7 @@ jobs:
         run: npx prisma migrate deploy
       - name: El esquema de Prisma coincide con las migraciones (sin desfase)
         run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
-      - name: Datos semilla (dos veces: debe ser idempotente)
+      - name: Datos semilla, dos veces (debe ser idempotente)
         run: |
           npm run seed
           npm run seed
