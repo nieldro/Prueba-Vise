@@ -7,11 +7,26 @@ on:
 
 jobs:
   backend:
-    name: Parte 1 - backend (pruebas y compilación)
+    name: Parte 1 - backend (pruebas, concurrencia y compilación)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: parte1-inventario/backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: inventario
+          POSTGRES_PASSWORD: inventario
+          POSTGRES_DB: inventario
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U inventario -d inventario"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://inventario:inventario@localhost:5432/inventario
+      # Activa las pruebas de concurrencia contra PostgreSQL real (se omiten si no está definida).
+      TEST_DATABASE_URL: postgresql://inventario:inventario@localhost:5432/inventario
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,7 +37,16 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npx tsc --noEmit
-      - run: npm test
+      - name: Aplicar las migraciones desde cero
+        run: npx prisma migrate deploy
+      - name: El esquema de Prisma coincide con las migraciones (sin desfase)
+        run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+      - name: Datos semilla (dos veces: debe ser idempotente)
+        run: |
+          npm run seed
+          npm run seed
+      - name: Pruebas unitarias y de concurrencia
+        run: npm test -- --verbose
       - run: npm run build
 
   frontend:

@@ -61,6 +61,15 @@ rpa-antecedentes -i data/cedulas.xlsx -o data/salida/reporte_antecedentes.xlsx  
 
 `python -m rpa_antecedentes ...` es equivalente a `rpa-antecedentes ...`.
 
+**Scripts de ejecución (sin instalar nada)**, solo hace falta Python con `requests` y `openpyxl`
+(`pip install -r requirements.txt`):
+
+```bash
+python ejecutar_servicio_simulado.py        # terminal 1: servicio simulado en http://127.0.0.1:8080
+python ejecutar.py --input data/cedulas.xlsx --output data/salida/reporte_antecedentes.xlsx   # terminal 2
+python ejecutar.py --help                   # todas las opciones
+```
+
 ## Entrada y salida
 
 **Entrada** (`cedulas.xlsx`): una hoja con una columna llamada `cedula` (sin importar mayúsculas,
@@ -183,7 +192,9 @@ parte2-rpa/
 │   ├── models.py        tipos de datos compartidos
 │   ├── cli.py           punto de entrada
 │   └── mock_server.py   servicio simulado (solo biblioteca estándar)
-├── tests/               162 pruebas, 97 % de cobertura
+├── tests/               165 pruebas, 97 % de cobertura
+├── ejecutar.py          script de ejecución (sin instalar el paquete)
+├── ejecutar_servicio_simulado.py
 ├── scripts/make_sample_input.py
 ├── data/cedulas.xlsx    entrada de ejemplo
 ├── Dockerfile · requirements.txt · pyproject.toml

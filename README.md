@@ -63,6 +63,9 @@ cp .env.example .env              # ajusta DATABASE_URL y JWT_SECRET
 npm install && npx prisma migrate deploy && npm run seed
 npm run start:dev                 # http://localhost:3000/api   |   pruebas: npm test
 
+# Pruebas de concurrencia contra el PostgreSQL real (se omiten si no se define la variable):
+TEST_DATABASE_URL=postgresql://usuario:clave@localhost:5432/inventario npm test
+
 # Frontend (otra terminal)
 cd parte1-inventario/frontend
 npm install && npm run dev        # http://localhost:5173 (reenvía /api al backend)
@@ -112,7 +115,8 @@ configura. Detalle, opciones, cédulas de prueba y arquitectura en
 
 ```bash
 cd parte2-rpa && pip install -e ".[dev]"
-pytest --cov && ruff check . && mypy       # 162 pruebas, 97 % de cobertura
+pytest --cov && ruff check . && mypy       # 165 pruebas, 97 % de cobertura
+python ejecutar_servicio_simulado.py &     # y en otra terminal: python ejecutar.py --help
 ```
 
 ## Estructura
