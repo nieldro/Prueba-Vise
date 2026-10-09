@@ -41,5 +41,43 @@ services:
     ports:
       - '${FRONTEND_PORT:-5173}:80'
 
+  # ---- Parte 2: RPA de antecedentes ----------------------------------------------------------
+  antecedentes-mock:
+    build: ./parte2-rpa
+    restart: unless-stopped
+    entrypoint: ['python', '-m', 'rpa_antecedentes.mock_server']
+    command: ['--host', '0.0.0.0', '--port', '8080']
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    ports:
+      - '${ANTECEDENTES_MOCK_PORT:-8080}:8080'
+
+  # Se ejecuta una vez al hacer `docker compose up` (lee data/cedulas.xlsx y escribe
+  # data/salida/reporte_antecedentes.xlsx). Para repetirlo: `docker compose run --rm rpa ...`.
+  rpa:
+    build: ./parte2-rpa
+    depends_on:
+      antecedentes-mock:
+        condition: service_healthy
+    restart: 'no'
+    # En Linux la carpeta de salida es del usuario del equipo; con RPA_UID/RPA_GID el contenedor
+    # escribe como ese usuario (ver .env.example). En Docker Desktop no hace falta cambiarlos.
+    user: '${RPA_UID:-10001}:${RPA_GID:-10001}'
+    environment:
+      ANTECEDENTES_URL: http://antecedentes-mock:8080
+      ANTECEDENTES_TIMEOUT: ${ANTECEDENTES_TIMEOUT:-5}
+      ANTECEDENTES_RETRIES: ${ANTECEDENTES_RETRIES:-3}
+      RPA_WORKERS: ${RPA_WORKERS:-1}
+    volumes:
+      - ./parte2-rpa/data:/data
+    command:
+      - '--input'
+      - '/data/cedulas.xlsx'
+      - '--output'
+      - '/data/salida/reporte_antecedentes.xlsx'
+
 volumes:
   db-data:

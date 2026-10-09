@@ -1,17 +1,27 @@
 # Decisiones técnicas
 
-**Stack.** NestJS (módulos, inyección de dependencias y validación por decoradores), PostgreSQL con Prisma (migraciones versionadas, tipado extremo a extremo) y React con Vite y TypeScript. Docker Compose levanta todo con un comando.
+## Parte 1: inventario (NestJS, PostgreSQL, Prisma, React)
 
-**Consistencia del stock.** Es el punto más delicado. Una salida no hace "leer, comparar, escribir": ejecuta un `UPDATE ... WHERE stock >= cantidad` dentro de una transacción. Postgres bloquea la fila, así que dos salidas simultáneas se serializan y la segunda ve el stock ya descontado. Como segunda línea de defensa, la base tiene restricciones `CHECK` (stock no negativo, cantidad positiva). Se comprobó con 12 salidas simultáneas de 3 unidades sobre un stock de 20: 6 exitosas, 6 rechazadas con 422 y stock final de 2.
+**Stack.** NestJS por su estructura en módulos y la validación por decoradores; Prisma por las migraciones versionadas y el tipado de extremo a extremo; React con Vite y TypeScript. Un `docker compose` levanta todo.
 
-**Kardex.** Cada movimiento guarda el saldo resultante (`balanceAfter`), calculado en la misma transacción que lo aplica. Así el kardex se lee sin recalcular y es auditable. El stock del producto solo cambia por movimientos; crear un producto con stock inicial genera su entrada inicial.
+**Consistencia del stock.** Una salida no hace "leer, comparar, escribir": ejecuta `UPDATE ... WHERE stock >= cantidad` dentro de una transacción, así Postgres serializa las salidas simultáneas y la segunda ve el stock ya descontado. Además hay restricciones `CHECK` en la base. Verificado con 12 salidas simultáneas de 3 unidades sobre 20: 6 aceptadas, 6 rechazadas (422) y stock final 2.
 
-**Motivo de cada movimiento.** Saber *por qué* salió o entró stock (venta, dañado, pérdida, dotación, compra, devolución, ajuste) es lo que vuelve útil el kardex. El motivo es obligatorio, se guarda como un enum de la base de datos y debe corresponder al tipo: una entrada no puede ser "venta". Se valida en la API (400) y, como segunda defensa, con un `CHECK` en la tabla. Alimenta el filtro del historial y el resumen de salidas por motivo.
+**Kardex y motivo.** Cada movimiento guarda su saldo resultante, calculado en la misma transacción, y un **motivo obligatorio** (venta, dañado, pérdida, dotación, compra, devolución, ajuste) que debe corresponder al tipo. Se valida en la API (400) y con un `CHECK` en la tabla. El stock solo cambia por movimientos.
 
-**Seguridad.** Contraseñas con bcrypt (coste 12); el login gasta el mismo tiempo exista o no el correo. El token JWT expira (1 h por defecto) y se valida contra la base en cada petición, de modo que un usuario eliminado pierde acceso de inmediato. El guard es global: una ruta nueva nace protegida y solo se abre con `@Public()`. Además: validación con lista blanca (`whitelist` + `forbidNonWhitelisted`), límite de peticiones (más estricto en el login), `helmet`, CORS por entorno, y variables de entorno validadas al arrancar (la app no inicia con un `JWT_SECRET` débil).
+**Seguridad y errores.** bcrypt (coste 12), JWT con expiración validado contra la base, guard global (una ruta nueva nace protegida), validación con lista blanca, límite de peticiones, `helmet` y variables de entorno validadas al arrancar. Los errores de Prisma se traducen a 404/409; las reglas de negocio responden 422 o 409.
 
-**Errores.** Un filtro traduce los errores de Prisma a 404 o 409 sin filtrar detalles internos. Las reglas de negocio responden con su código propio: 422 para stock insuficiente, 409 para SKU duplicado o para borrar un producto que ya tiene historial.
+**Alcance.** Sin CRUD de usuarios (no se pide). Un producto con historial no se elimina. Pruebas unitarias sobre los servicios de movimientos y categorías; la interfaz se verificó recorriendo cada control en un navegador real.
 
-**Alcance deliberado.** No hay CRUD de usuarios (la prueba no lo pide). Los productos con movimientos no se eliminan porque el kardex es un registro histórico. Las pruebas unitarias cubren el servicio de movimientos, que concentra la lógica crítica; los componentes de interfaz se verificaron manualmente en el navegador.
+**Interfaz.** Estructura y estilo 3D de la referencia entregada, con la paleta de la prueba y el logo de VISE. Cada control tiene una acción real; los filtros viven en la URL y los listados se exportan a CSV. El efecto 3D es solo CSS y respeta `prefers-reduced-motion`.
 
-**Interfaz.** Estructura y estilo 3D tomados de la referencia entregada, con la paleta que sugiere la prueba (verde #1B5E20 y #2E7D32, azul #1F4E8C, gris #F4F6F5) y el logo de VISE en el encabezado. Entradas en verde y salidas en azul de forma consistente; el ámbar se reserva a las alertas de stock bajo. Cada control tiene una acción real: las tarjetas del resumen abren la vista filtrada, el calendario lleva al historial del día, los filtros viven en la URL (se pueden compartir) y los listados se exportan a CSV. El efecto 3D (inclinación con perspectiva, relieve en botones y capas) usa solo CSS y un pequeño componente, sin librerías 3D, y respeta `prefers-reduced-motion`. Las páginas se cargan bajo demanda (el bundle inicial baja de 640 kB a 215 kB).
+## Parte 2: RPA (Python)
+
+**Modularidad.** Lector, validador, cliente HTTP, procesador y generador de reporte son módulos independientes que se comunican por tipos, así que cada uno se prueba o reemplaza por separado.
+
+**Servicio simulado.** El enunciado pide un servicio simulado, aunque cita el portal real de la Procuraduría. Ese portal usa captcha y exige autorización del titular, por lo que no se automatiza: el proyecto incluye su propio servicio (determinista, con cédulas que provocan fallas) y el cliente rechaza explícitamente la URL real con un mensaje claro. Cambiar de fuente solo requiere otro cliente con el mismo método `lookup`.
+
+**Reintentos.** Se reintenta lo transitorio (timeout, conexión, 429, 5xx) con espera `base · 2^(n-1)`, *jitter* y tope; se respeta `Retry-After`. No se reintenta lo que no mejora (404, otros 4xx, respuestas ilegibles). Agotados los intentos la cédula queda como `error` y el lote **continúa**.
+
+**Datos y privacidad.** Validación estricta (6 a 10 dígitos ASCII), duplicados eliminados antes de consultar y cédulas inválidas reportadas, no descartadas. El log lleva marca de tiempo y **enmascara** las cédulas. El reporte se escribe de forma atómica y guarda la cédula como texto.
+
+**Calidad.** 162 pruebas (datos inválidos, servicio caído, timeouts, 429, flujo completo) con 97 % de cobertura, `ruff` y `mypy` estricto, y CI que también construye las imágenes de Docker.

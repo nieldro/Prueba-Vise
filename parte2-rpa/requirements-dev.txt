@@ -1,0 +1,8 @@
+-r requirements.txt
+# Herramientas de desarrollo: pruebas, cobertura, estilo y tipos.
+mypy==2.4.0
+pytest==9.1.1
+pytest-cov==7.1.0
+responses==0.26.3
+ruff==0.16.10
+types-requests==2.33.0.20261006

@@ -1,0 +1,52 @@
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.cli | Inicio rpa-antecedentes 1.0.0 | entrada=data\cedulas.xlsx | servicio=http://127.0.0.1:8096
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.reader | Leídas 25 filas con cédula de cedulas.xlsx (1 vacías ignoradas)
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.validator | Eliminadas 3 cédulas duplicadas (filas [17, 18, 19])
+2026-10-09 09:37:33 | WARNING | rpa_antecedentes.validator | 5 cédulas no pasan la validación y se reportarán como error
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | Procesando 22 cédulas con 1 hilo(s)
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*******678 intento=1/4 http=200 ms=42
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*******678 estado=limpio
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****456 intento=1/4 http=200 ms=5
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****456 estado=limpio
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****123 intento=1/4 http=200 ms=5
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****123 estado=limpio
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*******409 intento=1/4 http=200 ms=5
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*******409 estado=con antecedentes
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****410 intento=1/4 http=200 ms=5
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****410 estado=con antecedentes
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****112 intento=1/4 http=200 ms=4
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****112 estado=con antecedentes
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****103 intento=1/4 http=404 ms=4
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****103 estado=no encontrado
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****600 intento=1/4 http=404 ms=4
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****600 estado=no encontrado
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*******790 intento=1/4 http=200 ms=5
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*******790 estado=limpio
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****845 intento=1/4 http=200 ms=5
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****845 estado=limpio
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=*****321 intento=1/4 http=200 ms=4
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=*****321 estado=limpio
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.client | consulta cedula=****567 intento=1/4 http=200 ms=4
+2026-10-09 09:37:33 | INFO    | rpa_antecedentes.processor | resultado cedula=****567 estado=limpio
+2026-10-09 09:37:33 | WARNING | rpa_antecedentes.client | consulta cedula=*****888 intento=1/4 falló (HTTP 503); reintento en 0.40s
+2026-10-09 09:37:33 | WARNING | rpa_antecedentes.client | consulta cedula=*****888 intento=2/4 falló (HTTP 503); reintento en 0.51s
+2026-10-09 09:37:34 | INFO    | rpa_antecedentes.client | consulta cedula=*****888 intento=3/4 http=200 ms=4
+2026-10-09 09:37:34 | INFO    | rpa_antecedentes.processor | resultado cedula=*****888 estado=limpio
+2026-10-09 09:37:34 | WARNING | rpa_antecedentes.client | consulta cedula=*****777 intento=1/4 falló (HTTP 429); reintento en 1.00s
+2026-10-09 09:37:35 | INFO    | rpa_antecedentes.client | consulta cedula=*****777 intento=2/4 http=200 ms=4
+2026-10-09 09:37:35 | INFO    | rpa_antecedentes.processor | resultado cedula=*****777 estado=limpio
+2026-10-09 09:37:35 | WARNING | rpa_antecedentes.client | consulta cedula=*****999 intento=1/4 falló (HTTP 500); reintento en 0.37s
+2026-10-09 09:37:35 | WARNING | rpa_antecedentes.client | consulta cedula=*****999 intento=2/4 falló (HTTP 500); reintento en 0.70s
+2026-10-09 09:37:36 | WARNING | rpa_antecedentes.client | consulta cedula=*****999 intento=3/4 falló (HTTP 500); reintento en 1.39s
+2026-10-09 09:37:37 | ERROR   | rpa_antecedentes.client | consulta cedula=*****999 intento=4/4 fallo definitivo: HTTP 500
+2026-10-09 09:37:37 | ERROR   | rpa_antecedentes.processor | resultado cedula=*****999 estado=error (El servicio no respondió tras 4 intentos (último: HTTP 500))
+2026-10-09 09:37:37 | WARNING | rpa_antecedentes.processor | resultado cedula=**345 estado=error (inválida: debe tener entre 6 y 10 dígitos (tiene 5))
+2026-10-09 09:37:37 | WARNING | rpa_antecedentes.processor | resultado cedula=********901 estado=error (inválida: debe tener entre 6 y 10 dígitos (tiene 11))
+2026-10-09 09:37:37 | WARNING | rpa_antecedentes.processor | resultado cedula=*****345 estado=error (inválida: debe contener solo dígitos numéricos (sin letras, espacios ni separadores))
+2026-10-09 09:37:37 | WARNING | rpa_antecedentes.processor | resultado cedula=*******678 estado=error (inválida: debe contener solo dígitos numéricos (sin letras, espacios ni separadores))
+2026-10-09 09:37:37 | WARNING | rpa_antecedentes.processor | resultado cedula=******567 estado=error (inválida: debe contener solo dígitos numéricos (sin letras, espacios ni separadores))
+2026-10-09 09:37:37 | INFO    | rpa_antecedentes.client | consulta cedula=*****234 intento=1/4 http=200 ms=5
+2026-10-09 09:37:37 | INFO    | rpa_antecedentes.processor | resultado cedula=*****234 estado=limpio
+2026-10-09 09:37:37 | INFO    | rpa_antecedentes.client | consulta cedula=*****543 intento=1/4 http=200 ms=4
+2026-10-09 09:37:37 | INFO    | rpa_antecedentes.processor | resultado cedula=*****543 estado=limpio
+2026-10-09 09:37:37 | INFO    | rpa_antecedentes.report | Reporte escrito en data\ejemplo\reporte_antecedentes.xlsx (22 filas)
+2026-10-09 09:37:37 | INFO    | rpa_antecedentes.cli | Fin: 11 limpios, 3 con antecedentes, 2 no encontrados, 6 errores

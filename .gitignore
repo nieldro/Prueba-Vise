@@ -7,6 +7,19 @@ coverage/
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
 ~$*
 *.docx
 PASOS_OTRO_PC.md
+
+# El reporte y el log del RPA son resultados de cada ejecución, no código.
+parte2-rpa/data/salida/*
+!parte2-rpa/data/salida/.gitkeep
+
+# ...salvo el ejemplo de resultado que se entrega como evidencia.
+!parte2-rpa/data/ejemplo/rpa_antecedentes.log
