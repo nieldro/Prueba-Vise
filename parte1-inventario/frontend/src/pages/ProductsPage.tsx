@@ -39,7 +39,7 @@ export function ProductsPage() {
     setPage(1);
   }, [urlSearch]);
 
-  const [editing, setEditing] = useState<Product | 'new' | null>(null);
+  const [editing, setEditing] = useState<Product | null>(null);
   const [moving, setMoving] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
 
@@ -121,9 +121,9 @@ export function ProductsPage() {
             <button type="button" className="btn btn--ghost" onClick={() => void exportCsv()} disabled={exporting}>
               <Download size={18} /> {exporting ? 'Exportando...' : 'Exportar CSV'}
             </button>
-            <button type="button" className="btn btn--primary" onClick={() => setEditing('new')}>
+            <Link className="btn btn--primary" to="/productos/nuevo">
               <Plus size={18} /> Nuevo producto
-            </button>
+            </Link>
           </>
         }
       />
@@ -176,7 +176,15 @@ export function ProductsPage() {
         ) : list.isError ? (
           <ErrorState error={list.error} onRetry={() => void list.refetch()} />
         ) : list.data && list.data.data.length === 0 ? (
-          <EmptyState title="Sin resultados" hint="Prueba con otra búsqueda o categoría." />
+          <EmptyState
+            title="Sin resultados"
+            hint="Prueba con otra búsqueda o categoría, o agrega el producto."
+            action={
+              <Link className="btn btn--primary btn--small" to="/productos/nuevo">
+                <Plus size={16} /> Nuevo producto
+              </Link>
+            }
+          />
         ) : (
           list.data && (
             <>
@@ -247,9 +255,7 @@ export function ProductsPage() {
         )}
       </section>
 
-      {editing && (
-        <ProductFormModal product={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />
-      )}
+      {editing && <ProductFormModal product={editing} onClose={() => setEditing(null)} />}
 
       {moving && (
         <Modal title="Registrar movimiento" onClose={() => setMoving(null)}>

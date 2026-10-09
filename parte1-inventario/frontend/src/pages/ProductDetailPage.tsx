@@ -19,6 +19,7 @@ import { KardexPanel } from '../features/KardexPanel';
 import { MovementForm } from '../features/MovementForm';
 import { ProductFormModal } from '../features/ProductFormModal';
 import { formatDateTime, formatInt, formatMoney } from '../lib/format';
+import { reasonLabel } from '../lib/reasons';
 
 type Tab = 'general' | 'historial' | 'especificaciones';
 
@@ -159,7 +160,9 @@ export function ProductDetailPage() {
                         {m.type === 'ENTRADA' ? <ArrowDownToLine size={18} /> : <ArrowUpFromLine size={18} />}
                       </span>
                       <div className="move-card__text">
-                        <strong>{m.type === 'ENTRADA' ? 'Entrada' : 'Salida'}</strong>
+                        <strong>
+                          {m.type === 'ENTRADA' ? 'Entrada' : 'Salida'} &middot; {reasonLabel(m.reason)}
+                        </strong>
                         <small>{m.note ?? formatDateTime(m.createdAt)}</small>
                       </div>
                       <div className="move-card__figure">

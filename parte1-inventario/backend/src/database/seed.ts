@@ -1,4 +1,4 @@
-import { MovementType, PrismaClient } from '@prisma/client';
+import { MovementReason, MovementType, PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { BCRYPT_ROUNDS } from '../auth/auth.constants';
 import { CATEGORIES, LOW_STOCK_SKUS, PRODUCTS } from './catalog';
@@ -19,6 +19,15 @@ function mulberry32(seed: number): () => number {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+/** Reparte las salidas de ejemplo entre sus motivos: más ventas y dotaciones que daños o pérdidas. */
+function exitReason(roll: number): [MovementReason, string] {
+  if (roll < 0.55) return [MovementReason.VENTA, 'Venta a cliente'];
+  if (roll < 0.8) return [MovementReason.DOTACION, 'Dotación a puesto de vigilancia'];
+  if (roll < 0.9) return [MovementReason.DANADO, 'Producto dañado en bodega'];
+  if (roll < 0.95) return [MovementReason.PERDIDA, 'Faltante detectado en inventario'];
+  return [MovementReason.DEVOLUCION_PROVEEDOR, 'Devolución por defecto de fábrica'];
 }
 
 async function seedUser(): Promise<number> {
@@ -86,6 +95,7 @@ async function seedHistory(userId: number): Promise<void> {
     const rows: Array<{
       productId: number;
       type: MovementType;
+      reason: MovementReason;
       quantity: number;
       balanceAfter: number;
       note: string;
@@ -93,7 +103,13 @@ async function seedHistory(userId: number): Promise<void> {
       createdAt: Date;
     }> = [];
 
-    const push = (type: MovementType, quantity: number, daysAgo: number, note: string) => {
+    const push = (
+      type: MovementType,
+      reason: MovementReason,
+      quantity: number,
+      daysAgo: number,
+      note: string,
+    ) => {
       stock += type === MovementType.ENTRADA ? quantity : -quantity;
       // Horario laboral (13:00-21:00 UTC = 08:00-16:00 en Bogotá), sin pasar del momento actual.
       const at = new Date(now - daysAgo * DAY);
@@ -101,6 +117,7 @@ async function seedHistory(userId: number): Promise<void> {
       rows.push({
         productId: product.id,
         type,
+        reason,
         quantity,
         balanceAfter: stock,
         note,
@@ -114,6 +131,7 @@ async function seedHistory(userId: number): Promise<void> {
 
     push(
       MovementType.ENTRADA,
+      MovementReason.STOCK_INICIAL,
       runsLow ? 12 + Math.floor(rand() * 6) : Math.max(6, Math.round((40 + rand() * 80) * volume)),
       30,
       'Stock inicial',
@@ -122,12 +140,20 @@ async function seedHistory(userId: number): Promise<void> {
       const roll = rand();
       if (!runsLow && roll < 0.22) {
         const qty = Math.max(2, Math.round((10 + rand() * 40) * volume));
-        push(MovementType.ENTRADA, qty, daysAgo, 'Compra a proveedor');
+        const returned = rand() < 0.1;
+        push(
+          MovementType.ENTRADA,
+          returned ? MovementReason.DEVOLUCION_CLIENTE : MovementReason.COMPRA,
+          qty,
+          daysAgo,
+          returned ? 'Devolución de cliente' : 'Compra a proveedor',
+        );
       } else if (roll >= 0.22 && roll < 0.7 && stock > (runsLow ? 4 : 0)) {
         const maxQty = runsLow
           ? Math.min(3, stock - 4)
           : Math.max(1, Math.min(stock, Math.round(14 * volume)));
-        push(MovementType.SALIDA, 1 + Math.floor(rand() * maxQty), daysAgo, 'Dotación a puesto de vigilancia');
+        const [reason, note] = exitReason(rand());
+        push(MovementType.SALIDA, reason, 1 + Math.floor(rand() * maxQty), daysAgo, note);
       }
     }
 

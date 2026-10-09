@@ -11,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { KardexQueryDto } from './dto/kardex-query.dto';
 import { ListMovementsQueryDto } from './dto/list-movements-query.dto';
+import { isReasonValidFor } from './movement-reasons';
 
 export interface KardexResult {
   product: { id: number; name: string; sku: string; stock: number };
@@ -37,9 +38,10 @@ export class MovementsService {
 
   /** Historial general de movimientos con filtros por tipo, producto, día y texto. */
   async list(query: ListMovementsQueryDto): Promise<Paginated<MovementRow>> {
-    const { page, limit, type, productId, date, search } = query;
+    const { page, limit, type, reason, productId, date, search } = query;
     const where: Prisma.MovementWhereInput = {
       ...(type && { type }),
+      ...(reason && { reason }),
       ...(productId && { productId }),
       ...(search && {
         product: {
@@ -86,7 +88,13 @@ export class MovementsService {
    * Además la tabla tiene un CHECK (stock >= 0) como última línea de defensa.
    */
   async register(dto: CreateMovementDto, userId: number): Promise<Movement> {
-    const { productId, type, quantity, note } = dto;
+    const { productId, type, reason, quantity, note } = dto;
+
+    if (!isReasonValidFor(type, reason)) {
+      throw new BadRequestException(
+        `El motivo ${reason} no corresponde a una ${type === MovementType.ENTRADA ? 'entrada' : 'salida'}`,
+      );
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const balanceAfter =
@@ -95,7 +103,7 @@ export class MovementsService {
           : await this.applyExit(tx, productId, quantity);
 
       return tx.movement.create({
-        data: { productId, type, quantity, balanceAfter, note, userId },
+        data: { productId, type, reason, quantity, balanceAfter, note, userId },
       });
     });
   }

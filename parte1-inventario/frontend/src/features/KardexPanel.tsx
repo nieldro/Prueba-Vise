@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, Loading } from '../components/feedback';
 import { Pagination } from '../components/Pagination';
 import { TiltCard } from '../components/TiltCard';
 import { formatDateTime, formatInt } from '../lib/format';
+import { reasonLabel } from '../lib/reasons';
 
 /** Indicadores y tabla paginada del kardex de un producto (con saldo acumulado). */
 export function KardexPanel({ productId }: { productId: number }) {
@@ -57,6 +58,7 @@ export function KardexPanel({ productId }: { productId: number }) {
                   <tr>
                     <th>Fecha</th>
                     <th>Tipo</th>
+                    <th>Motivo</th>
                     <th className="num">Cantidad</th>
                     <th className="num">Saldo</th>
                     <th>Nota</th>
@@ -71,6 +73,7 @@ export function KardexPanel({ productId }: { productId: number }) {
                           {m.type === 'ENTRADA' ? 'Entrada' : 'Salida'}
                         </span>
                       </td>
+                      <td>{reasonLabel(m.reason)}</td>
                       <td className={`num ${m.type === 'ENTRADA' ? 'num-in' : 'num-out'}`}>
                         {m.type === 'ENTRADA' ? '+' : '-'}
                         {formatInt(m.quantity)}

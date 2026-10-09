@@ -3,15 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowDownToLine, ArrowUpFromLine, Download, FilterX, Plus, Search } from 'lucide-react';
 import { movementsApi, productsApi } from '../api/endpoints';
-import type { MovementType } from '../api/types';
+import type { MovementReason, MovementType } from '../api/types';
 import { EmptyState, ErrorState, Loading } from '../components/feedback';
-import { Modal } from '../components/Modal';
 import { PageHeader } from '../components/PageHeader';
 import { Pagination } from '../components/Pagination';
 import { useToast } from '../components/Toast';
-import { MovementForm } from '../features/MovementForm';
 import { downloadCsv, fetchAllPages, todayStamp } from '../lib/csv';
 import { formatDateTime, formatInt } from '../lib/format';
+import { FILTER_REASONS, reasonLabel } from '../lib/reasons';
 import { useDebounced } from '../lib/useDebounced';
 
 const PAGE_SIZE = 12;
@@ -21,13 +20,13 @@ export function MovementsPage() {
   // Los filtros viven en la URL: el calendario y otras pantallas pueden enlazar a una vista filtrada.
   const [params, setParams] = useSearchParams();
   const type = (params.get('type') as MovementType | null) ?? undefined;
+  const reason = (params.get('reason') as MovementReason | null) ?? undefined;
   const productId = params.get('productId') ? Number(params.get('productId')) : undefined;
   const date = params.get('date') ?? undefined;
 
   const [searchInput, setSearchInput] = useState(params.get('search') ?? '');
   const search = useDebounced(searchInput);
   const [page, setPage] = useState(1);
-  const [creating, setCreating] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   const setFilter = (key: string, value: string) => {
@@ -43,9 +42,9 @@ export function MovementsPage() {
     setSearchInput('');
     setPage(1);
   };
-  const hasFilters = Boolean(type || productId || date || searchInput);
+  const hasFilters = Boolean(type || reason || productId || date || searchInput);
 
-  const filters = { type, productId, date, search: search || undefined };
+  const filters = { type, reason, productId, date, search: search || undefined };
   const products = useQuery({
     queryKey: ['products', 'picker'],
     queryFn: () => productsApi.list({ page: 1, limit: 100 }),
@@ -62,12 +61,13 @@ export function MovementsPage() {
       const rows = await fetchAllPages((p, limit) => movementsApi.list({ ...filters, page: p, limit }));
       downloadCsv(
         `movimientos-${todayStamp()}.csv`,
-        ['Fecha', 'SKU', 'Producto', 'Tipo', 'Cantidad', 'Saldo', 'Nota', 'Registrado por'],
+        ['Fecha', 'SKU', 'Producto', 'Tipo', 'Motivo', 'Cantidad', 'Saldo', 'Nota', 'Registrado por'],
         rows.map((m) => [
           formatDateTime(m.createdAt),
           m.product.sku,
           m.product.name,
           m.type === 'ENTRADA' ? 'Entrada' : 'Salida',
+          reasonLabel(m.reason),
           m.quantity,
           m.balanceAfter,
           m.note,
@@ -92,9 +92,9 @@ export function MovementsPage() {
             <button type="button" className="btn btn--ghost" onClick={() => void exportCsv()} disabled={exporting}>
               <Download size={18} /> {exporting ? 'Exportando...' : 'Exportar CSV'}
             </button>
-            <button type="button" className="btn btn--primary" onClick={() => setCreating(true)}>
+            <Link className="btn btn--primary" to="/movimientos/nuevo">
               <Plus size={18} /> Nuevo movimiento
-            </button>
+            </Link>
           </>
         }
       />
@@ -118,6 +118,18 @@ export function MovementsPage() {
             <option value="">Entradas y salidas</option>
             <option value="ENTRADA">Solo entradas</option>
             <option value="SALIDA">Solo salidas</option>
+          </select>
+          <select className="select" value={reason ?? ''} onChange={(e) => setFilter('reason', e.target.value)} aria-label="Motivo">
+            <option value="">Todos los motivos</option>
+            {FILTER_REASONS.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.options.map((r) => (
+                  <option key={r} value={r}>
+                    {reasonLabel(r)}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
           </select>
           <select
             className="select"
@@ -173,6 +185,7 @@ export function MovementsPage() {
                       <th>Fecha</th>
                       <th>Producto</th>
                       <th>Tipo</th>
+                      <th>Motivo</th>
                       <th className="num">Cantidad</th>
                       <th className="num">Saldo</th>
                       <th>Nota</th>
@@ -199,6 +212,7 @@ export function MovementsPage() {
                             {m.type === 'ENTRADA' ? 'Entrada' : 'Salida'}
                           </span>
                         </td>
+                        <td>{reasonLabel(m.reason)}</td>
                         <td className={`num ${m.type === 'ENTRADA' ? 'num-in' : 'num-out'}`}>
                           {m.type === 'ENTRADA' ? '+' : '-'}
                           {formatInt(m.quantity)}
@@ -224,11 +238,6 @@ export function MovementsPage() {
         )}
       </section>
 
-      {creating && (
-        <Modal title="Nuevo movimiento" onClose={() => setCreating(false)}>
-          <MovementForm onDone={() => setCreating(false)} />
-        </Modal>
-      )}
     </>
   );
 }

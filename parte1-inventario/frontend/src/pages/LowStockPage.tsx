@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, PackagePlus } from 'lucide-react';
 import { productsApi } from '../api/endpoints';
 import { EmptyState, ErrorState, Loading, StockBadge } from '../components/feedback';
 import { PageHeader } from '../components/PageHeader';
@@ -62,7 +62,7 @@ export function LowStockPage() {
                       <th>Categoría</th>
                       <th className="num">Stock</th>
                       <th>Estado</th>
-                      <th className="actions-col">Kardex</th>
+                      <th className="actions-col">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -86,6 +86,14 @@ export function LowStockPage() {
                         </td>
                         <td className="actions-col">
                           <div className="row-actions">
+                            <Link
+                              className="icon-btn"
+                              title="Reponer (registrar entrada)"
+                              aria-label={`Reponer ${p.name}`}
+                              to={`/movimientos/nuevo?productId=${p.id}&type=ENTRADA`}
+                            >
+                              <PackagePlus size={17} />
+                            </Link>
                             <Link className="icon-btn" title="Ver kardex" aria-label={`Ver kardex de ${p.name}`} to={`/productos/${p.id}/kardex`}>
                               <BookOpen size={17} />
                             </Link>

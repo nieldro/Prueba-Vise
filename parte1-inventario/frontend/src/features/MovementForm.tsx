@@ -1,35 +1,72 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
+import { ArrowDownToLine, ArrowRight, ArrowUpFromLine, Search } from 'lucide-react';
 import { movementsApi, productsApi } from '../api/endpoints';
-import type { MovementType, Product } from '../api/types';
+import type { MovementReason, MovementType, Product } from '../api/types';
+import { ProductImage } from '../components/ProductImage';
 import { useToast } from '../components/Toast';
 import { formatInt } from '../lib/format';
+import { REASONS } from '../lib/reasons';
+import { useDebounced } from '../lib/useDebounced';
+
+type ProductSummary = Pick<Product, 'id' | 'name' | 'sku' | 'stock'> & Partial<Pick<Product, 'images' | 'unit'>>;
 
 interface MovementFormProps {
-  /** Si viene fijo, no se muestra el selector de producto. */
-  product?: Pick<Product, 'id' | 'name' | 'sku' | 'stock'>;
+  /** Producto fijo (por ejemplo, desde su fila o su ficha): no se muestra el buscador. */
+  product?: ProductSummary;
+  /** Producto con el que arranca el formulario, pero que se puede cambiar. */
+  defaultProduct?: ProductSummary;
+  initialType?: MovementType;
   onDone?: () => void;
 }
 
-export function MovementForm({ product, onDone }: MovementFormProps) {
+function ProductHeader({ product }: { product: ProductSummary }) {
+  return (
+    <div className="picked-product">
+      <ProductImage className="picked-product__img" src={product.images?.[0]} alt="" />
+      <div>
+        <strong>{product.name}</strong>
+        <small>
+          {product.sku} &middot; stock actual {formatInt(product.stock)} {product.unit ?? ''}
+        </small>
+      </div>
+    </div>
+  );
+}
+
+export function MovementForm({ product: fixedProduct, defaultProduct, initialType = 'ENTRADA', onDone }: MovementFormProps) {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [productId, setProductId] = useState<number | ''>(product?.id ?? '');
-  const [type, setType] = useState<MovementType>('ENTRADA');
+  const [picked, setPicked] = useState<ProductSummary | undefined>(defaultProduct);
+  const [term, setTerm] = useState('');
+  const search = useDebounced(term);
+  const [type, setType] = useState<MovementType>(initialType);
+  const [reason, setReason] = useState<MovementReason>(REASONS[initialType][0].value);
   const [quantity, setQuantity] = useState('');
   const [note, setNote] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
-  const picker = useQuery({
-    queryKey: ['products', 'picker'],
-    queryFn: () => productsApi.list({ page: 1, limit: 100 }),
-    enabled: !product,
+  const product = fixedProduct ?? picked;
+  const needsPicker = !fixedProduct && !picked;
+
+  const results = useQuery({
+    queryKey: ['products', 'picker', search],
+    queryFn: () => productsApi.list({ page: 1, limit: 8, search: search || undefined }),
+    enabled: needsPicker,
   });
 
-  const selected = product ?? picker.data?.data.find((p) => p.id === productId);
+  const changeType = (next: MovementType) => {
+    setType(next);
+    setReason(REASONS[next][0].value);
+    setFormError(null);
+  };
+
+  const qty = Number(quantity);
+  const validQty = Number.isInteger(qty) && qty > 0;
+  const stockAfter = product && validQty ? product.stock + (type === 'ENTRADA' ? qty : -qty) : null;
+  const insufficient = type === 'SALIDA' && stockAfter !== null && stockAfter < 0;
 
   const mutation = useMutation({
     mutationFn: movementsApi.register,
@@ -38,6 +75,8 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
       toast.success(
         `${movement.type === 'ENTRADA' ? 'Entrada' : 'Salida'} registrada. Saldo: ${formatInt(movement.balanceAfter)}`,
       );
+      // Con buscador, el formulario queda listo para otro movimiento del mismo producto.
+      if (!fixedProduct && picked) setPicked({ ...picked, stock: movement.balanceAfter });
       setQuantity('');
       setNote('');
       setFormError(null);
@@ -48,37 +87,54 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const qty = Number(quantity);
-    if (!productId) return setFormError('Selecciona un producto');
-    if (!Number.isInteger(qty) || qty < 1) return setFormError('La cantidad debe ser un entero mayor a 0');
-    if (type === 'SALIDA' && selected && qty > selected.stock) {
-      return setFormError(`Stock insuficiente: hay ${formatInt(selected.stock)} unidades`);
-    }
+    if (!product) return setFormError('Selecciona un producto');
+    if (!validQty) return setFormError('La cantidad debe ser un entero mayor a 0');
+    if (insufficient) return setFormError(`Stock insuficiente: hay ${formatInt(product.stock)} unidades`);
     setFormError(null);
-    mutation.mutate({ productId, type, quantity: qty, note: note.trim() || undefined });
+    mutation.mutate({ productId: product.id, type, reason, quantity: qty, note: note.trim() || undefined });
   };
 
   return (
     <form className="form" onSubmit={submit} noValidate>
       {product ? (
-        <div className="form__product">
-          <strong>{product.name}</strong>
-          <small>
-            {product.sku} &middot; stock actual {formatInt(product.stock)}
-          </small>
+        <div className="form__product-row">
+          <ProductHeader product={product} />
+          {!fixedProduct && (
+            <button type="button" className="btn btn--ghost btn--small" onClick={() => setPicked(undefined)}>
+              Cambiar
+            </button>
+          )}
         </div>
       ) : (
-        <label className="field">
+        <div className="field">
           <span>Producto</span>
-          <select value={productId} onChange={(e) => setProductId(e.target.value ? Number(e.target.value) : '')}>
-            <option value="">Selecciona un producto</option>
-            {picker.data?.data.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.sku} - {p.name} (stock {formatInt(p.stock)})
-              </option>
+          <label className="search search--inline">
+            <Search size={18} />
+            <input
+              type="search"
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+              placeholder="Busca por nombre o SKU"
+              aria-label="Buscar producto"
+              autoFocus
+            />
+          </label>
+          <ul className="picker" aria-label="Resultados">
+            {results.data?.data.map((p) => (
+              <li key={p.id}>
+                <button type="button" className="picker__item" onClick={() => setPicked(p)}>
+                  <ProductImage className="picked-product__img" src={p.images[0]} alt="" />
+                  <span className="picker__text">
+                    <strong>{p.name}</strong>
+                    <small>{p.sku}</small>
+                  </span>
+                  <span className="picker__stock">{formatInt(p.stock)} {p.unit}</span>
+                </button>
+              </li>
             ))}
-          </select>
-        </label>
+            {results.data && results.data.data.length === 0 && <li className="muted picker__empty">Sin resultados</li>}
+          </ul>
+        </div>
       )}
 
       <div className="field">
@@ -87,7 +143,7 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
           <button
             type="button"
             className={`segmented__item segmented__item--in${type === 'ENTRADA' ? ' is-active' : ''}`}
-            onClick={() => setType('ENTRADA')}
+            onClick={() => changeType('ENTRADA')}
             aria-pressed={type === 'ENTRADA'}
           >
             <ArrowDownToLine size={17} /> Entrada
@@ -95,13 +151,32 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
           <button
             type="button"
             className={`segmented__item segmented__item--out${type === 'SALIDA' ? ' is-active' : ''}`}
-            onClick={() => setType('SALIDA')}
+            onClick={() => changeType('SALIDA')}
             aria-pressed={type === 'SALIDA'}
           >
             <ArrowUpFromLine size={17} /> Salida
           </button>
         </div>
       </div>
+
+      <fieldset className="field reasons">
+        <legend>{type === 'ENTRADA' ? '¿Por qué entra?' : '¿Por qué sale?'}</legend>
+        <div className="reasons__grid">
+          {REASONS[type].map((r) => (
+            <label key={r.value} className={`reason${reason === r.value ? ' is-active' : ''}`}>
+              <input
+                type="radio"
+                name="reason"
+                value={r.value}
+                checked={reason === r.value}
+                onChange={() => setReason(r.value)}
+              />
+              <strong>{r.label}</strong>
+              <small>{r.hint}</small>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <label className="field">
         <span>Cantidad</span>
@@ -116,6 +191,15 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
         />
       </label>
 
+      {product && stockAfter !== null && (
+        <div className={`stock-preview${insufficient ? ' is-error' : ''}`} aria-live="polite">
+          <span>{formatInt(product.stock)}</span>
+          <ArrowRight size={16} />
+          <strong>{insufficient ? 'insuficiente' : formatInt(stockAfter)}</strong>
+          <small>{insufficient ? 'No alcanza para esta salida' : 'Stock después del movimiento'}</small>
+        </div>
+      )}
+
       <label className="field">
         <span>Nota (opcional)</span>
         <input
@@ -123,7 +207,7 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
           maxLength={255}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Compra a proveedor, despacho a obra..."
+          placeholder="Número de factura, puesto, detalle del daño..."
         />
       </label>
 
@@ -133,7 +217,7 @@ export function MovementForm({ product, onDone }: MovementFormProps) {
         </p>
       )}
 
-      <button type="submit" className="btn btn--primary" disabled={mutation.isPending}>
+      <button type="submit" className="btn btn--primary" disabled={mutation.isPending || !product}>
         {mutation.isPending ? 'Registrando...' : 'Registrar movimiento'}
       </button>
     </form>

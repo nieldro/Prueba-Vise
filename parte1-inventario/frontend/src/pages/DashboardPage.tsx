@@ -20,6 +20,7 @@ import { ProductImage } from '../components/ProductImage';
 import { PageHeader } from '../components/PageHeader';
 import { TiltCard } from '../components/TiltCard';
 import { formatDateTime, formatDay, formatInt, percentChange } from '../lib/format';
+import { reasonLabel } from '../lib/reasons';
 
 const RANGES = [7, 14, 30] as const;
 
@@ -70,7 +71,8 @@ export function DashboardPage() {
   if (summary.isError) return <ErrorState error={summary.error} onRetry={() => void summary.refetch()} />;
   if (!summary.data) return null;
 
-  const { totals, series, latestMovements } = summary.data;
+  const { totals, series, latestMovements, exitsByReason } = summary.data;
+  const maxExit = Math.max(1, ...exitsByReason.map((r) => r.units));
   const firstName = user?.name.split(' ')[0] ?? '';
 
   return (
@@ -180,6 +182,33 @@ export function DashboardPage() {
 
         <section className="card card--lift">
           <header className="card__header">
+            <h2>Salidas por motivo</h2>
+            <span className="muted">Últimos {summary.data.days} días</span>
+          </header>
+          {exitsByReason.length === 0 ? (
+            <p className="muted">No hubo salidas en este periodo.</p>
+          ) : (
+            <ul className="bars">
+              {exitsByReason.map((r) => (
+                <li key={r.reason ?? 'sin'}>
+                  <Link className="bars__label" to={r.reason ? `/movimientos?reason=${r.reason}` : '/movimientos?type=SALIDA'}>
+                    {reasonLabel(r.reason)}
+                  </Link>
+                  <span className="bars__track" aria-hidden="true">
+                    <span
+                      className={`bars__fill bars__fill--${r.reason === 'VENTA' || r.reason === 'DOTACION' ? 'ok' : 'warn'}`}
+                      style={{ width: `${Math.max(4, (r.units / maxExit) * 100)}%` }}
+                    />
+                  </span>
+                  <strong>{formatInt(r.units)}</strong>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="card card--lift">
+          <header className="card__header">
             <h2>Requieren reposición</h2>
           </header>
           {lowStock.data && lowStock.data.data.length > 0 ? (
@@ -232,7 +261,7 @@ export function DashboardPage() {
                 ))}
               </ul>
             )}
-            <Link className="card__link" to="/movimientos">
+            <Link className="card__link" to="/movimientos/nuevo">
               Registrar movimiento <ArrowRight size={16} />
             </Link>
           </section>

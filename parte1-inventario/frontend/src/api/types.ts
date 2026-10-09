@@ -1,5 +1,17 @@
 export type MovementType = 'ENTRADA' | 'SALIDA';
 
+export type MovementReason =
+  | 'STOCK_INICIAL'
+  | 'COMPRA'
+  | 'DEVOLUCION_CLIENTE'
+  | 'AJUSTE_ENTRADA'
+  | 'VENTA'
+  | 'DANADO'
+  | 'PERDIDA'
+  | 'DOTACION'
+  | 'DEVOLUCION_PROVEEDOR'
+  | 'AJUSTE_SALIDA';
+
 export interface Paginated<T> {
   data: T[];
   meta: { total: number; page: number; limit: number; totalPages: number };
@@ -70,6 +82,8 @@ export interface Movement {
   id: number;
   productId: number;
   type: MovementType;
+  /** Nulo solo en movimientos anteriores a que existiera el motivo. */
+  reason: MovementReason | null;
   quantity: number;
   balanceAfter: number;
   note: string | null;
@@ -86,6 +100,7 @@ export interface MovementFilters {
   page: number;
   limit: number;
   type?: MovementType;
+  reason?: MovementReason;
   productId?: number;
   date?: string;
   search?: string;
@@ -94,6 +109,7 @@ export interface MovementFilters {
 export interface MovementInput {
   productId: number;
   type: MovementType;
+  reason: MovementReason;
   quantity: number;
   note?: string;
 }
@@ -116,6 +132,7 @@ export interface DashboardSummary {
     previousExits: number;
   };
   series: Array<{ day: string; entries: number; exits: number }>;
+  exitsByReason: Array<{ reason: MovementReason | null; units: number }>;
   latestMovements: Array<{
     id: number;
     type: MovementType;

@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { MovementType } from '@prisma/client';
+import { MovementReason, MovementType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MovementsService } from './movements.service';
 
@@ -55,7 +55,7 @@ describe('MovementsService', () => {
       tx.movement.create.mockImplementation(({ data }) => Promise.resolve({ id: 1, ...data }));
 
       const result = await service.register(
-        { productId: 7, type: MovementType.ENTRADA, quantity: 15, note: 'Compra' },
+        { productId: 7, type: MovementType.ENTRADA, reason: MovementReason.COMPRA, quantity: 15, note: 'Compra' },
         99,
       );
 
@@ -68,6 +68,7 @@ describe('MovementsService', () => {
         data: {
           productId: 7,
           type: MovementType.ENTRADA,
+          reason: MovementReason.COMPRA,
           quantity: 15,
           balanceAfter: 35,
           note: 'Compra',
@@ -81,9 +82,38 @@ describe('MovementsService', () => {
       tx.product.update.mockRejectedValue(new Error('P2025'));
 
       await expect(
-        service.register({ productId: 404, type: MovementType.ENTRADA, quantity: 1 }, 1),
+        service.register({ productId: 404, type: MovementType.ENTRADA, reason: MovementReason.COMPRA, quantity: 1 }, 1),
       ).rejects.toThrow('P2025');
       expect(tx.movement.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('register - motivo', () => {
+    it('guarda el motivo de una salida por daño', async () => {
+      tx.product.updateMany.mockResolvedValue({ count: 1 });
+      tx.product.findUniqueOrThrow.mockResolvedValue({ stock: 8 });
+      tx.movement.create.mockImplementation(({ data }) => Promise.resolve(data));
+
+      const result = await service.register(
+        { productId: 7, type: MovementType.SALIDA, reason: MovementReason.DANADO, quantity: 2, note: 'Golpeado' },
+        1,
+      );
+
+      expect(result).toMatchObject({ reason: MovementReason.DANADO, balanceAfter: 8 });
+    });
+
+    it.each([
+      [MovementType.ENTRADA, MovementReason.VENTA],
+      [MovementType.ENTRADA, MovementReason.DANADO],
+      [MovementType.SALIDA, MovementReason.COMPRA],
+      [MovementType.SALIDA, MovementReason.STOCK_INICIAL],
+    ])('rechaza con 400 el motivo incompatible (%s con %s) sin tocar el stock', async (type, reason) => {
+      await expect(service.register({ productId: 7, type, reason, quantity: 1 }, 1)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(tx.product.update).not.toHaveBeenCalled();
+      expect(tx.product.updateMany).not.toHaveBeenCalled();
     });
   });
 
@@ -94,7 +124,7 @@ describe('MovementsService', () => {
       tx.movement.create.mockImplementation(({ data }) => Promise.resolve({ id: 2, ...data }));
 
       const result = await service.register(
-        { productId: 7, type: MovementType.SALIDA, quantity: 6 },
+        { productId: 7, type: MovementType.SALIDA, reason: MovementReason.VENTA, quantity: 6 },
         1,
       );
 
@@ -111,7 +141,7 @@ describe('MovementsService', () => {
       tx.movement.create.mockImplementation(({ data }) => Promise.resolve(data));
 
       await expect(
-        service.register({ productId: 7, type: MovementType.SALIDA, quantity: 10 }, 1),
+        service.register({ productId: 7, type: MovementType.SALIDA, reason: MovementReason.VENTA, quantity: 10 }, 1),
       ).resolves.toMatchObject({ balanceAfter: 0 });
     });
 
@@ -120,7 +150,7 @@ describe('MovementsService', () => {
       tx.product.findUnique.mockResolvedValue({ stock: 3 });
 
       await expect(
-        service.register({ productId: 7, type: MovementType.SALIDA, quantity: 5 }, 1),
+        service.register({ productId: 7, type: MovementType.SALIDA, reason: MovementReason.VENTA, quantity: 5 }, 1),
       ).rejects.toThrow(UnprocessableEntityException);
       expect(tx.movement.create).not.toHaveBeenCalled();
     });
@@ -130,7 +160,7 @@ describe('MovementsService', () => {
       tx.product.findUnique.mockResolvedValue({ stock: 3 });
 
       await expect(
-        service.register({ productId: 7, type: MovementType.SALIDA, quantity: 5 }, 1),
+        service.register({ productId: 7, type: MovementType.SALIDA, reason: MovementReason.VENTA, quantity: 5 }, 1),
       ).rejects.toThrow('hay 3 y se piden 5');
     });
 
@@ -139,7 +169,7 @@ describe('MovementsService', () => {
       tx.product.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.register({ productId: 404, type: MovementType.SALIDA, quantity: 1 }, 1),
+        service.register({ productId: 404, type: MovementType.SALIDA, reason: MovementReason.VENTA, quantity: 1 }, 1),
       ).rejects.toThrow(NotFoundException);
       expect(tx.movement.create).not.toHaveBeenCalled();
     });
@@ -149,7 +179,7 @@ describe('MovementsService', () => {
       tx.product.findUniqueOrThrow.mockResolvedValue({ stock: 1 });
       tx.movement.create.mockResolvedValue({});
 
-      await service.register({ productId: 7, type: MovementType.SALIDA, quantity: 1 }, 1);
+      await service.register({ productId: 7, type: MovementType.SALIDA, reason: MovementReason.VENTA, quantity: 1 }, 1);
 
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
@@ -180,6 +210,14 @@ describe('MovementsService', () => {
 
       expect(prisma.movement.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { type: MovementType.SALIDA, productId: 7 } }),
+      );
+    });
+
+    it('filtra por motivo', async () => {
+      await service.list({ page: 1, limit: 10, reason: MovementReason.PERDIDA });
+
+      expect(prisma.movement.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { reason: MovementReason.PERDIDA } }),
       );
     });
 

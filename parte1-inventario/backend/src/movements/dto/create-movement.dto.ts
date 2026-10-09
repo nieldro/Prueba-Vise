@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { MovementType } from '@prisma/client';
+import { MovementReason, MovementType } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
@@ -12,6 +12,15 @@ export class CreateMovementDto {
   @ApiProperty({ enum: MovementType, example: MovementType.ENTRADA })
   @IsEnum(MovementType)
   type: MovementType;
+
+  @ApiProperty({
+    enum: MovementReason,
+    example: MovementReason.COMPRA,
+    description:
+      'Entradas: COMPRA, DEVOLUCION_CLIENTE, AJUSTE_ENTRADA. Salidas: VENTA, DANADO, PERDIDA, DOTACION, DEVOLUCION_PROVEEDOR, AJUSTE_SALIDA.',
+  })
+  @IsEnum(MovementReason)
+  reason: MovementReason;
 
   @ApiProperty({ example: 10, minimum: 1 })
   @IsInt()

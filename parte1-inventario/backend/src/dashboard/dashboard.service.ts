@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MovementType } from '@prisma/client';
+import { MovementReason, MovementType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface DayRow {
@@ -33,6 +33,8 @@ export interface DashboardSummary {
     previousExits: number;
   };
   series: DayRow[];
+  /** Unidades que salieron en el periodo, agrupadas por motivo (venta, dañado, pérdida...). */
+  exitsByReason: Array<{ reason: MovementReason | null; units: number }>;
   latestMovements: Array<{
     id: number;
     type: MovementType;
@@ -56,13 +58,14 @@ export class DashboardService {
   }
 
   async summary(days: number): Promise<DashboardSummary> {
-    const [products, stock, lowStockProducts, series, previous, latestMovements] =
+    const [products, stock, lowStockProducts, series, previous, exitsByReason, latestMovements] =
       await Promise.all([
         this.prisma.product.count(),
         this.prisma.product.aggregate({ _sum: { stock: true } }),
         this.prisma.product.count({ where: { stock: { lte: this.threshold } } }),
         this.dailySeries(days),
         this.periodTotals(days, days * 2),
+        this.exitsByReason(days),
         this.prisma.movement.findMany({
           take: 5,
           orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -88,6 +91,7 @@ export class DashboardService {
         previousExits: previous.exits,
       },
       series,
+      exitsByReason,
       latestMovements,
     };
   }
@@ -136,6 +140,21 @@ export class DashboardService {
         ON (m.created_at AT TIME ZONE 'UTC' AT TIME ZONE ${this.timezone})::date = d.day::date
       GROUP BY d.day
       ORDER BY d.day`;
+  }
+
+  private async exitsByReason(days: number): Promise<DashboardSummary['exitsByReason']> {
+    return this.prisma.$queryRaw<DashboardSummary['exitsByReason']>`
+      WITH bounds AS (
+        SELECT (now() AT TIME ZONE ${this.timezone})::date AS today
+      )
+      SELECT m.reason::text AS reason, SUM(m.quantity)::int AS units
+      FROM bounds b
+      JOIN movements m
+        ON (m.created_at AT TIME ZONE 'UTC' AT TIME ZONE ${this.timezone})::date
+           BETWEEN b.today - (${days}::int - 1) AND b.today
+      WHERE m.type = 'SALIDA'
+      GROUP BY m.reason
+      ORDER BY units DESC`;
   }
 
   /** Totales del periodo inmediatamente anterior, para mostrar la variacion. */

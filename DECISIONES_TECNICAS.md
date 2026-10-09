@@ -6,6 +6,8 @@
 
 **Kardex.** Cada movimiento guarda el saldo resultante (`balanceAfter`), calculado en la misma transacción que lo aplica. Así el kardex se lee sin recalcular y es auditable. El stock del producto solo cambia por movimientos; crear un producto con stock inicial genera su entrada inicial.
 
+**Motivo de cada movimiento.** Saber *por qué* salió o entró stock (venta, dañado, pérdida, dotación, compra, devolución, ajuste) es lo que vuelve útil el kardex. El motivo es obligatorio, se guarda como un enum de la base de datos y debe corresponder al tipo: una entrada no puede ser "venta". Se valida en la API (400) y, como segunda defensa, con un `CHECK` en la tabla. Alimenta el filtro del historial y el resumen de salidas por motivo.
+
 **Seguridad.** Contraseñas con bcrypt (coste 12); el login gasta el mismo tiempo exista o no el correo. El token JWT expira (1 h por defecto) y se valida contra la base en cada petición, de modo que un usuario eliminado pierde acceso de inmediato. El guard es global: una ruta nueva nace protegida y solo se abre con `@Public()`. Además: validación con lista blanca (`whitelist` + `forbidNonWhitelisted`), límite de peticiones (más estricto en el login), `helmet`, CORS por entorno, y variables de entorno validadas al arrancar (la app no inicia con un `JWT_SECRET` débil).
 
 **Errores.** Un filtro traduce los errores de Prisma a 404 o 409 sin filtrar detalles internos. Las reglas de negocio responden con su código propio: 422 para stock insuficiente, 409 para SKU duplicado o para borrar un producto que ya tiene historial.

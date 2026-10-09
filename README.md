@@ -69,7 +69,7 @@ Pruebas unitarias del backend: `npm test` (dentro de `parte1-inventario/backend`
 | GET | `/products?page&limit&categoryId&search` | Listado paginado con filtro por categoría |
 | GET | `/products/low-stock?threshold` | Productos con stock menor o igual al umbral |
 | GET / POST / PATCH / DELETE | `/products`, `/products/:id` | CRUD con validación |
-| POST | `/movements` | Registra una entrada o salida; rechaza stock negativo |
+| POST | `/movements` | Registra una entrada o salida con su **motivo**; rechaza stock negativo y motivos que no corresponden al tipo |
 | GET | `/products/:id/kardex` | Historial con saldo acumulado y totales |
 | GET / POST / PATCH / DELETE | `/categories`, `/categories/:id` | Categorías (no se elimina una con productos) |
 | GET | `/movements?page&limit&type&productId&date&search` | Historial general de movimientos |
@@ -79,10 +79,12 @@ Pruebas unitarias del backend: `npm test` (dentro de `parte1-inventario/backend`
 **Códigos HTTP**: 200/201/204 éxito, 400 validación, 401 sin sesión o credenciales inválidas, 404 recurso inexistente, 409 conflicto (SKU repetido, producto con movimientos), 422 stock insuficiente, 429 demasiadas peticiones.
 
 **Interfaz** (cada botón tiene una acción real):
-- **Resumen**: tarjetas que abren la vista filtrada correspondiente, gráfica por periodo (7, 14 o 30 días), calendario de actividad que lleva al historial del día elegido, últimos movimientos y productos por reponer.
-- **Productos**: foto, búsqueda, filtro por categoría, paginación, alta, edición, baja, registro de movimiento desde la fila y exportación a CSV.
-- **Ficha de producto**: galería de imágenes, información general, historial (kardex) y especificaciones técnicas.
-- **Movimientos**: historial con filtros (tipo, producto, día, texto), paginación, exportación a CSV y alta de movimientos.
+- **Resumen**: tarjetas que abren la vista filtrada correspondiente, gráfica por periodo (7, 14 o 30 días), salidas por motivo, calendario de actividad que lleva al historial del día elegido, últimos movimientos y productos por reponer.
+- **Nuevo producto** (pestaña propia): formulario con vista previa en vivo, stock inicial (queda en el kardex) e imagen opcional.
+- **Registrar movimiento** (pestaña propia): se busca el producto, se elige entrada o salida y **por qué**: compra, devolución de cliente o ajuste; venta, dañado, pérdida o robo, dotación a vigilante, devolución a proveedor o ajuste. Muestra el stock resultante antes de confirmar.
+- **Productos**: foto, búsqueda, filtro por categoría, paginación, edición, baja, registro de movimiento desde la fila y exportación a CSV.
+- **Ficha de producto**: galería de imágenes, información general, historial (kardex con motivo) y especificaciones técnicas.
+- **Historial**: movimientos con filtros (tipo, motivo, producto, día, texto), paginación y exportación a CSV.
 - **Categorías**: crear, renombrar, eliminar (si está vacía) y abrir sus productos.
 - **Stock bajo**: umbral configurable.
 

@@ -1,23 +1,37 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeftRight,
+  History,
   LayoutDashboard,
   LogOut,
   Package,
+  PackagePlus,
   Search,
   Tags,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
-const NAV = [
+interface NavEntry {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  end?: boolean;
+  /** Rutas hijas que tienen su propia pestaña y por tanto no deben encender esta. */
+  exclude?: string;
+}
+
+const NAV: NavEntry[] = [
   { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true },
-  { to: '/productos', label: 'Productos', icon: Package, end: false },
-  { to: '/movimientos', label: 'Movimientos', icon: ArrowLeftRight, end: false },
-  { to: '/categorias', label: 'Categorías', icon: Tags, end: false },
-  { to: '/stock-bajo', label: 'Stock bajo', icon: AlertTriangle, end: false },
+  { to: '/productos', label: 'Productos', icon: Package, exclude: '/productos/nuevo' },
+  { to: '/productos/nuevo', label: 'Nuevo producto', icon: PackagePlus },
+  { to: '/movimientos/nuevo', label: 'Registrar movimiento', icon: ArrowLeftRight },
+  { to: '/movimientos', label: 'Historial', icon: History, exclude: '/movimientos/nuevo' },
+  { to: '/categorias', label: 'Categorías', icon: Tags },
+  { to: '/stock-bajo', label: 'Stock bajo', icon: AlertTriangle },
 ];
 
 const todayText = new Intl.DateTimeFormat('es-CO', {
@@ -40,6 +54,7 @@ function initials(name: string): string {
 export function AppShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [search, setSearch] = useState('');
 
   const submitSearch = (event: FormEvent) => {
@@ -56,12 +71,14 @@ export function AppShell() {
         </div>
 
         <nav className="sidebar__nav" aria-label="Principal">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+          {NAV.map(({ to, label, icon: Icon, end, exclude }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
-              className={({ isActive }) => `nav-item${isActive ? ' nav-item--active' : ''}`}
+              className={({ isActive }) =>
+                `nav-item${isActive && !(exclude && pathname.startsWith(exclude)) ? ' nav-item--active' : ''}`
+              }
             >
               <Icon size={19} strokeWidth={2.1} />
               <span>{label}</span>

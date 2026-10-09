@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MovementType, Prisma } from '@prisma/client';
+import { MovementReason, MovementType, Prisma } from '@prisma/client';
 import { Paginated, paginated, skipOf } from '../common/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -59,6 +59,7 @@ export class ProductsService {
           data: {
             productId: product.id,
             type: MovementType.ENTRADA,
+            reason: MovementReason.STOCK_INICIAL,
             quantity: initialStock,
             balanceAfter: initialStock,
             note: 'Stock inicial',

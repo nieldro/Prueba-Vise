@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { MovementType } from '@prisma/client';
+import { MovementReason, MovementType } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Matches, MaxLength, Min } from 'class-validator';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -9,6 +9,11 @@ export class ListMovementsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(MovementType)
   type?: MovementType;
+
+  @ApiPropertyOptional({ enum: MovementReason })
+  @IsOptional()
+  @IsEnum(MovementReason)
+  reason?: MovementReason;
 
   @ApiPropertyOptional({ description: 'Filtra por producto' })
   @IsOptional()

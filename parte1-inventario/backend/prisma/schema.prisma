@@ -15,6 +15,22 @@ enum MovementType {
   @@map("movement_type")
 }
 
+/// Motivo de un movimiento. Los de entrada y los de salida son distintos (ver MOVEMENT_REASONS).
+enum MovementReason {
+  STOCK_INICIAL
+  COMPRA
+  DEVOLUCION_CLIENTE
+  AJUSTE_ENTRADA
+  VENTA
+  DANADO
+  PERDIDA
+  DOTACION
+  DEVOLUCION_PROVEEDOR
+  AJUSTE_SALIDA
+
+  @@map("movement_reason")
+}
+
 model User {
   id           Int        @id @default(autoincrement())
   email        String     @unique
@@ -65,6 +81,8 @@ model Movement {
   id           Int          @id @default(autoincrement())
   productId    Int          @map("product_id")
   type         MovementType
+  /// Nulo solo en movimientos anteriores a que existiera el motivo.
+  reason       MovementReason?
   quantity     Int
   /// Saldo del producto inmediatamente despues de aplicar este movimiento.
   balanceAfter Int          @map("balance_after")
@@ -76,5 +94,6 @@ model Movement {
 
   @@index([productId, createdAt])
   @@index([createdAt])
+  @@index([reason])
   @@map("movements")
 }
