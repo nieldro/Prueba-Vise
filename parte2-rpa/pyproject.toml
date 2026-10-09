@@ -20,6 +20,7 @@ dev = [
   "responses>=0.25",
   "ruff>=0.6",
   "mypy>=1.11",
+  "types-openpyxl",
   "types-requests",
 ]
 
